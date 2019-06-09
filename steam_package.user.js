@@ -142,12 +142,12 @@ unsafeWindow.restoreman = function() {
             url: '/en/wizard/AjaxDoPackageRestore',
             type: "POST",
             dataType : 'json',
-        data: {
-            packageid: a,
-            appid: app,
-            sessionid: g_sessionID,
-            wizard_ajax: 1
-        },
+            data: {
+                packageid: sub,
+                appid: app,
+                sessionid: g_sessionID,
+                wizard_ajax: 1
+            },
             success: function( data, status, xhr ){
                 // {"success":false,"errorMsg":"There was an unexpected error removing this product from your account."}
                 // {"success":true,"hash":"HelpPackageRemoved?appid=15700&packageid=88110"}
