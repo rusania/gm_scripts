@@ -3,9 +3,6 @@
 // @namespace   http://tampermonkey.net/
 // @description bundle games info
 // @include     http*://store.steampowered.com/sale/*
-// @include     http*://www.sonkwo.com/operation_activities*/*
-// @include     http*://www.sonkwo.com/store/search*
-// @include     http*://*.activity.sonkwo.com/*/index.html
 // @include     http*://directg.net/event/event.html
 // @include     http*://directg.net/game/game_page.html?product_code=*
 // @include     http*://*otakumaker.com/index.php/account/admin/deal/view/*
@@ -17,7 +14,7 @@
 // @exclude     https://tryit-forfree.rhcloud.com/*
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/bundle_info.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/bundle_info.user.js
-// @version     2019.04.30.1
+// @version     2019.06.13.1
 // @run-at      document-end
 // @connect     free.currencyconverterapi.com
 // @require     http://cdn.bootcss.com/jquery/3.1.0/jquery.min.js
@@ -77,121 +74,11 @@ if (match) {
     });
 } //steam sale
 
-match = /operation_activities\/(\d+)/.exec(document.URL);
-if (match) {
-    $('#nav_bar').append('<li><a id="btn">INFO</a></li>');
-    $('#nav_bar').append('<li><a target="_blank" href="http://45.78.74.83/sonkwo.php?o=html&cc=cn&n='+ match[1] +'">TRY IT</a></li>');
-    $('.firm-game').after('<div id="limit"></div><br>');
-    $('.firm-game').after('<table id="info"></table>');
-    $('#btn').click(function () {
-        $('#info').empty();
-        $('#limit').empty();
-        $('#info').append('<tr><td>序号</td><td>游戏</td><td>优惠价</td><td>折扣</td><td>原价</td></tr>');
-        $('#limit').append('[table][tr][td]游戏[/td][td]优惠价[/td][td]折扣[/td][td]杉果史低[/td][td]杉果原价[/td][td]购买地址[/td][/tr]<span id="g"></span>[/table]');
-        var i = 0;
-        $('.limit').find('li').each(function () {
-            var a = $(this).find('a') [0];
-            var title = $(this).find('div.limit-game-title').text();
-            var link = $(a).attr('href');
-            var discount = ''; //$(this).find('h5').text().replace(/OFF/gm, '');
-            var list_price = $.trim($(this).find('div.cost-l').text().replace(/￥/gm, ''));
-            var sale_price = $.trim($(this).find('div.cost-r').text().replace(/￥/gm, ''));
-            $('#info').append('<tr><td>' + ++i + '</td><td><a href="' + link + '" target="_blank">' + title + '</a></td><td>' + sale_price + '</td><td>-' + discount + '</td><td>' + list_price + '</td></tr>');
-            match = /\d+/.exec(link);
-            if (match) {
-                var id = match;
-                $('#g').append('<div id=' + id + '></div>');
-                var name_en = '';
-                var pc = 0;
-                var low = 0;
-                GM_xmlhttpRequest({
-                    method: 'GET',
-                    url: 'http://steamdb.sinaapp.com/sonkwo/' + id + '.dat',
-                    onload: function (response) {
-                        var data = null;
-                        try {
-                            data = JSON.parse(response.responseText);
-                            if (data) {
-                                low = data.price_lowest;
-                                if (sale_price < data.price_lowest)
-                                    low = sale_price;
-                                if (data.steam)
-                                    name_en = '[url=' + data.steam + ']' + data.name + '[/url]';
-                                else {
-                                    name_en = data.name;
-                                    title += ' [color=red][b]' + data.drm + '[/b][/color]';
-                                }
-                                list_price = data.price;
-                                pc = Math.round(((sale_price / list_price - 1).toFixed(2)) * 100);
-                            }
-                            $('#' + id).append('[tr][td]' + name_en + '<br>' + title + '[/td][td]' + sale_price + '[/td][td]' + pc + '%[/td][td]￥' + low + '[/td][td]￥' + list_price + '[/td][td][url]' + link + '[/url][/td][/tr]');
-                        } catch (e) {
-                            GM_xmlhttpRequest({
-                                method: 'GET',
-                                url: link,
-                                onload: function (response) {
-                                    var data = null;
-                                    try {
-                                        data = JSON.parse(response.responseText);
-                                        if (data.status == 'success') {
-                                            list_price = data.data.list_price;
-                                            sale_price = data.data.sale_price;
-                                            name_en = data.data.alias_name;
-                                            pc = ((sale_price / list_price - 1).toFixed(2)) * 100;
-                                            $('#' + id).append('[tr][td]' + name_en + '<br>' + title + '[/td][td]' + sale_price + '[/td][td]' + pc + '%[/td][td]￥' + low + '[/td][td]￥' + list_price + '[/td][td][url]' + link + '[/url][/td][/tr]');
-                                        }
-                                    } catch (e) {
-                                    }
-                                }
-                            });
-                        }
-                    }
-                });
-            }
-        });
-        i = 0;
-        $('.firm-game').find('li').each(function () {
-            var a = $(this).find('a') [0];
-            var title = $(a).attr('title');
-            var link = $(a).attr('href');
-            var discount = $(this).find('h5').text().replace(/OFF/gm, '');
-            var del = $(this).find('p.text-through').text().replace(/￥/gm, '');
-            var p = $(this).find('p.text-none').text().replace(/￥/gm, '');
-            $('#info').append('<tr><td>' + ++i + '</td><td><a href="' + link + '" target="_blank">' + title + '</a></td><td>' + p + '</td><td>-' + discount + '</td><td>' + del + '</td></tr>');
-        });
-    });
-} //sonkwo activity
-
-match = /sonkwo.com\/store\/search/.exec(document.URL);
-if (match) {
-    setTimeout(function () {
-        var url = 'http://45.78.74.83/sonkwo.php?o=html';
-        var k = /tag%5B%5D=(\d+)/.exec(document.URL);
-        var q = '';
-        if (k)
-            q = '&g=' + k[1];
-        else {
-            k = /keyword=([^=&?]+)/.exec(document.URL);
-            if (k)
-                q = '&q=' + k[1];
-        }
-        if (q)
-            url += q;
-        var p = '';
-        k = /page=(\d+)/.exec(document.URL);
-        if (k)
-            p = '&p=' + k[1];
-        if (p)
-            url += p;
-        $('.search-keys').append('<span class="key-block"><a target="_blank" href="'+url+'">TRY IT</a></span>');
-    }, 5000);
-} //sonkwo search
-
 match = /directg.net\/event/.exec(document.URL);
 if (match) {
     $('.navbar-nav').append('<li class="mega" data-level="1"><a itemprop="url" id="btn">INFO</a></li>');
     $('#system-message-container').append('<div>实时汇率：<span id="ratio">0</ratio></div>');
-    $('#system-message-container').append('<a target="_blank" href="http://45.78.74.83/dg.php?v=0">TRY IT</a>');
+    $('#system-message-container').append('<a target="_blank" href="http://66.154.108.170/dg.php?v=0">TRY IT</a>');
     $('#system-message-container').append('<table id="info"></table>');
     $('#btn').click(function () {
         $('#info').empty();
@@ -231,34 +118,6 @@ if (match) {
         getRatio('KRWCNY', f);
     });
 } //directgames game_page
-
-match = /bundlestars\.com\/en\/orders/.exec(document.URL);
-if (match) {
-    var li = $('#navbarBundles').parent().parent();
-    li.append('<li><a id ="redeem" href="#"><span style="color:red;font-weight:bold;">REDEEM</span></a></li>');
-    $('#redeem').click(function () {
-        if ($('#list').length > 0) {
-            $('#list').remove();
-        }
-        $('.order').append('<table id="list"></table>');
-        $('.bundle').each(function () {
-            var i = 1;
-            $(this).parent().find('.order-table').each(function () {
-                var title = $(this).find('.title').text();
-                var key = $(this).find('.form-control').val();
-                if (key == undefined) {
-                    var a = $(this).find('a');
-                    setTimeout(function () {
-                        a.click();
-                    }, 2000);
-                } //var f = '<tr><td>' + title + '</td><td>' + key + '</td></tr>';
-
-                var f = '【' + i++ + '】【' + title + '】' + key + '<br>';
-                $('#list').append(f);
-            });
-        });
-    });
-} //bundlestars orders
 
 match = /com\/superbundle_/.exec(document.URL);
 if (match) {
@@ -392,14 +251,20 @@ if (match) {
                 var title = $($(this).find('h1')[0]).text();
                 var hr = $(this).find('.game-steam-url').attr('href');
                 match = /(app|sub|bundle)\/(\d+)/.exec(hr);
-                if (match)
+                if (match){
                     getGridContent(match[2], match[1], title, '#' + i, ++k);
+                    var n = $(this).find('img');
+                    if(n.length > 0){
+                        $(n[0]).attr('src', `https://media.st.dl.bscstorage.net/steam/${match[1]}s/${match[2]}/header.jpg`);
+                    }
+
+                }
 
             });
         });
         $('.g').append(k);
         var regx = /amnt > ([0-9.]+)/g;
-        text = $('#order-form-box').text();
+        var text = $('#order-form-box').text();
         i = 0;
         var j = 1;
         if ($('.happy-hour-link-cont').length > 0)
@@ -409,6 +274,16 @@ if (match) {
         while (match) {
             $('.info').append('<div><span style="color:' + colors[i] + ';">[color=' + colors[i++] + ']支付超过$' + match[1] + '获得' + (i + 1) * j + '份完整包（每份$' + (match[1] / (i + 1) / j).toFixed(2) + '）[/color]</span></div>');
             match = regx.exec(text);
+        }
+        var n = $('#bundle-logo');
+        if (n.length > 0) {
+            var src = $(n[0]).attr('src');
+            $(n[0]).remove();
+            n = $('.bundle-claim-phrase');
+            if (n.length > 0){
+                $(n[0]).empty();
+                $(n[0]).append(`<img src="${src}">`);
+            }
         }
     });
 } //indiegala bundle
