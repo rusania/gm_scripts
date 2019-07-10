@@ -6,7 +6,7 @@
 // @include		http*://store.steampowered.com/explore*
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/steam_queue.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/steam_queue.user.js
-// @version     2019.03.25.01
+// @version     2019.07.04.1
 // @connect     steamdb.info
 // @grant       unsafeWindow
 // @grant       GM_xmlhttpRequest
@@ -27,21 +27,23 @@ function info(id){
             if (response.status == 503)
                 alert('Just a moment');
             else {
-                var p = $(response.responseText).find("#subs table tbody");
                 var c = [];
-                if (p.length > 0){
-                    $(p[0]).children('tr').each(function(){
-                        var d = $(this).children('td');
-                        var sub = $(d[0]).text();
-                        var name = $(d[1]).text();
-                        var cut = $(d[2]).text();
-                        var to =  $(d[3]).text();
-                        var t = $(d[4]).attr('data-sort');
-                        t = tm(t * 1000);
-                        c.push(sub);
-                        $('#b').append(`<tr><td>${sub}</td><td><a target=_blank href="https://steamdb.info/bundle/${sub}/">${name}</a></td><td>${cut} ${to}</td><td>${t}</td></tr>`);
-                    });
-                }
+                $(response.responseText).find("#subs h2").each(function(){
+                    var m = /Bundles that include/.exec($(this).text());
+                    if (m){
+                        $(this).next('div').find('tbody tr').each(function(){
+                            var d = $(this).children('td');
+                            var sub = $(d[0]).text();
+                            var name = $(d[1]).text();
+                            var cut = $(d[2]).text();
+                            var to =  $(d[3]).text();
+                            var t = $(d[4]).attr('data-sort');
+                            t = tm(t * 1000);
+                            c.push(sub);
+                            $('#b').append(`<tr><td>${sub}</td><td><a target=_blank href="https://steamdb.info/bundle/${sub}/">${name}</a></td><td>${cut} ${to}</td><td>${t}</td></tr>`);
+                        });
+                    }
+                });
                 var b = [];
                 $(response.responseText).find('.package').each(function(){
                     var d = $(this).children('td');

@@ -9,7 +9,7 @@
 // @require     http://libs.baidu.com/jquery/1.10.1/jquery.min.js
 // @updateURL https://github.com/rusania/gm_scipts/raw/master/ovk.user.js
 // @downloadURL https://github.com/rusania/gm_scipts/raw/master/ovk.user.js
-// @version     2019.06.28.1
+// @version     2019.07.02.1
 // @grant       unsafeWindow
 // @connect     steamcommunity.com
 // @grant       GM_xmlhttpRequest
@@ -73,8 +73,7 @@ unsafeWindow.getkey = function(id){
 
 unsafeWindow.login = function(){
     GM_xmlhttpRequest({
-        method: "POST",
-        data: "x=62&y=18",
+        method: "GET",
         url: "https://www.overkillsoftware.com/fedorakeys/?login",
         onload: function(response) {
             var m = /OpenID_loggedInName/.exec(response.responseText);

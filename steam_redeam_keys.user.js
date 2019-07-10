@@ -5,7 +5,7 @@
 // @include     https://store.steampowered.com/account/registerkey*
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/steam_redeam_keys.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/steam_redeam_keys.user.js
-// @version     2018.04.18.1
+// @version     2019.07.10.1
 // @run-at      document-end
 // @require     http://libs.baidu.com/jquery/1.10.1/jquery.min.js
 // @grant       GM_log
@@ -44,7 +44,7 @@ function regkey()
     }
     $.each(ks, function(k, v){
         var i = k + 1;
-        $('#re').append('<tr><td>' + i + '</td><td>' + v + '</td><td id="g' + i + '"></td><td id="s' + i + '"></td><td id="r' + i + '"></td></tr>');
+        $('#re').append(`<tr><td>${i}</td><td>${v}</td><td id="g${i}"></td><td id="s${i}"></td><td id="r${i}"></td></tr>`);
         setTimeout(function () {
             sent(i, v);
         },i * 2000);
@@ -68,7 +68,7 @@ function sent(i, v)
             if ( data.purchase_receipt_info && data.purchase_receipt_info.line_items && data.purchase_receipt_info.line_items[0] && data.purchase_receipt_info.line_items[0].line_item_description ){
                 strGameName = data.purchase_receipt_info.line_items[0].line_item_description;
                 sub = data.purchase_receipt_info.line_items[0].packageid;
-                sub = '<a target="_blank" href="https://steamdb.info/sub/' + sub + '/">' +  sub +'</a>';
+                sub = `<a target="_blank" href="https://steamdb.info/sub/${sub}/">${sub}</a>`;
             }
 
             if (data.success == 1){
@@ -114,6 +114,8 @@ function sent(i, v)
                         sErrorMessage = '发生了一个意外错误。您的产品代码尚未兑换。';
                         break;
                 }
+            } else {
+                sErrorMessage = `${data.success}: ${data.error}`;
             }
             $('#g'+i).append(strGameName);
             $('#s'+i).append(sub);
