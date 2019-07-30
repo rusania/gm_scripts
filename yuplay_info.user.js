@@ -10,9 +10,10 @@
 // @include     http*://gamazavr.ru/orders/*
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/yuplay_info.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/yuplay_info.user.js
-// @version     2019.04.30.1
+// @version     2019.07.30.1
 // @run-at      document-end
-// @connect     free.currencyconverterapi.com
+// @connect     data.fixer.io
+// @connect     45.78.74.83
 // @require     http://cdn.bootcss.com/jquery/3.1.0/jquery.min.js
 // @grant       GM_xmlhttpRequest
 // @grant       GM_log
@@ -54,8 +55,9 @@ if (match) {
     });
 } //yuplay news
 
-match = /ru\/product/.exec(document.URL);
+match = /ru\/product\/(\d+)/.exec(document.URL);
 if (match) {
+    var id = match[1];
     $($('.navi').children() [0]).append('<li><a id="btn">INFO</a></li>');
     $($('.navi').children() [0]).append('<li><a id="ru">RU</a></li>');
     $('.good-title').append('<div>实时汇率：<span id="r">0</span></div>');
@@ -68,8 +70,10 @@ if (match) {
                 $(this).append(`<span class="ru" style="color:red; font-weight: bold;">&yen;${q}</span>`);
             });
             var p = $(":contains('SUB_ID') > span");
-            if (p.length > 0)
-                p.after(`<a class="ru" target="_blank" href="http://steamdb.info/sub/${p.text()}/">API</a>`);
+            if (p.length > 0) {
+                p.after('<div id="db"></div>');
+                getLow(id);
+            }
         };
         getRatio('RUB', 'CNY', f);
     });
@@ -144,20 +148,46 @@ $('#grid').click(function () {
     GM_setClipboard(txt);
 });
 
+var getLow = function (p) {
+    $('#db').empty();
+    var url = `http://45.78.74.83/yuplay.php?p=${p}`;
+    $('#db').append(`<p><a target="_blank" href="http://45.78.74.83/yuplay.php?p=${p}">API</a></p>`);
+    GM_xmlhttpRequest({
+        method: 'GET',
+        url: url,
+        onload: function (response) {
+            if (response.responseText){
+                var j = JSON.parse(response.responseText);
+                $("#db").append(`<p>Low: ${j.low}</p>`);
+                if (j.drm == "Steam") {
+                    $('#db').append(`<p><a target="_blank" href="http://steamdb.info/sub/${j.db.sub}/">${j.db.region}</a></p>`);
+                    if (j.extra.price.cn.l > 0)
+                        $("#db").append(`<p>CNY: ${j.extra.price.cn.l} / ${j.extra.price.cn.p}</p>`);
+                    if (j.extra.price.us.l > 0)
+                        $("#db").append(`<p>USD: ${j.extra.price.us.l} / ${j.extra.price.us.p}</p>`);
+                    if (j.extra.info.deal)
+                        $("#db").append(`<p><a target="_blank" href="https://isthereanydeal.com/game${j.extra.info.deal}/">${j.extra.info.bundle}</a></p>`);
+                }
+            }
+        }
+    });
+};
+
 var getRatio = function (a, b, f) {
-    if (Date.now() - dt > 60 * 6 * 60000 || r === 0.0)
+    if (Date.now() - dt > 60 * 6 * 60000 || r === 0.0 || r === "undefined")
     {
-        var c = `${a}_${b}`;
-        var url = `https://free.currencyconverterapi.com/api/v5/convert?compact=ultra&q=${c}`;
+        var url = `http://data.fixer.io/api/latest?access_key=93bba107d8e24746fe6220b043df2695&symbols=${a},${b}`;
         GM_xmlhttpRequest({
             method: 'GET',
             url: url,
             onload: function (response) {
                 if (response.responseText){
                     var j = JSON.parse(response.responseText);
-                    r = j[c];
-                    GM_setValue("r", r);
-                    GM_setValue("dt", Date.now());
+                    if (j["success"]){
+                        r = (j.rates[b] / j.rates[a]).toFixed(4);
+                        GM_setValue("r", r);
+                        GM_setValue("dt", Date.now());
+                    }
                 }
                 $('#r').empty();
                 $('#r').append(r);
