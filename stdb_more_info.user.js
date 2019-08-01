@@ -9,7 +9,7 @@
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/stdb_more_info.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/stdb_more_info.user.js
 // @require     http://libs.baidu.com/jquery/1.10.1/jquery.min.js
-// @version     2019.05.23.1
+// @version     2019.08.01.1
 // @connect     store.steampowered.com
 // @grant       unsafeWindow
 // @grant       GM_xmlhttpRequest
@@ -27,7 +27,7 @@ var m = /(sub|app)\/(\d+)/.exec(document.URL);
 var p = $('.package');
 if (p.length > 0){
     $('.app-links').append('<a id="cmp">Cmp</a>');
-    $('.app-links').append(`<a id="pkg" target="_target" href="http://45.78.74.83/package.php?id=${m[2]}">Pkg</a>`);
+    $('.app-links').append(`<a id="pkg" target="_target" href="http://198.181.32.5/package.php?id=${m[2]}">Pkg</a>`);
     $('.app-links').append(`<a id="help" target="_target" href="https://help.steampowered.com/en/wizard/HelpWithGame/?appid=${m[2]}">Help</a>`);
     p.each(function(){
         var id = $(this).attr('data-subid');
@@ -61,7 +61,7 @@ unsafeWindow.comp = function(a) {
     $('#g').empty();
     $('#p').empty();
     $('#l').empty();
-    $('#l').append(`<a target=_blank href="http://45.78.74.83/sub.php?cc=cn&o=1&q=${a.join(',')}">cmp</a>`);
+    $('#l').append(`<a target=_blank href="http://198.181.32.5/sub.php?cc=cn&o=1&q=${a.join(',')}">cmp</a>`);
     var d = {};
     var f = [];
     var g = {};

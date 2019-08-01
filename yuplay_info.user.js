@@ -10,10 +10,10 @@
 // @include     http*://gamazavr.ru/orders/*
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/yuplay_info.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/yuplay_info.user.js
-// @version     2019.07.30.1
+// @version     2019.08.01.1
 // @run-at      document-end
 // @connect     data.fixer.io
-// @connect     45.78.74.83
+// @connect     198.181.32.5
 // @require     http://cdn.bootcss.com/jquery/3.1.0/jquery.min.js
 // @grant       GM_xmlhttpRequest
 // @grant       GM_log
@@ -33,7 +33,7 @@ var match = /ru\/news\/(\d+)/.exec(document.URL);
 if (match) {
     $($('.navi').children() [0]).append('<li><a id="btn">INFO</a></li>');
     $('.section-main').append('<div>实时汇率：<span id="r"></ratio></div>');
-    $('.section-main').append('<a target="_blank" href="http://45.78.74.83/yuplay.php?o=html&cc=cn&n='+ match[1] +'">TRY IT</a>');
+    $('.section-main').append('<a target="_blank" href="http://198.181.32.5/yuplay.php?o=html&cc=cn&n='+ match[1] +'">TRY IT</a>');
     $('.section-main').append('<table id="info"></table>');
     $('#btn').click(function () {
         $('#info').empty();
@@ -150,8 +150,8 @@ $('#grid').click(function () {
 
 var getLow = function (p) {
     $('#db').empty();
-    var url = `http://45.78.74.83/yuplay.php?p=${p}`;
-    $('#db').append(`<p><a target="_blank" href="http://45.78.74.83/yuplay.php?p=${p}">API</a></p>`);
+    var url = `http://198.181.32.5/yuplay.php?p=${p}`;
+    $('#db').append(`<p><a target="_blank" href="http://198.181.32.5/yuplay.php?p=${p}">API</a></p>`);
     GM_xmlhttpRequest({
         method: 'GET',
         url: url,

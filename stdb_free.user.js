@@ -7,7 +7,7 @@
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/stdb_free.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/stdb_free.user.js
 // @require     http://libs.baidu.com/jquery/1.10.1/jquery.min.js
-// @version     2019.05.23.1
+// @version     2019.08.01.1
 // @connect     store.steampowered.com
 // @grant       unsafeWindow
 // @grant       GM_xmlhttpRequest
@@ -125,7 +125,7 @@ $("body").on('click', '#f1', function(){
             free.push(sub)
         }
     });
-    $('h1').after('<form id="f" action="http://45.78.74.83/dbfree.php" method="post" target="_blank"></form>');
+    $('h1').after('<form id="f" action="http://198.181.32.5/dbfree.php" method="post" target="_blank"></form>');
     $('#f').append(`<input type="hidden" name="ip" value="${ip.join(';')}" />`);
     $('#f').append('<input type="submit" value="Submit" />');
 });
