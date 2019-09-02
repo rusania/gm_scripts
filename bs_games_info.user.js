@@ -7,7 +7,7 @@
 //@include      https://www.fanatical.com/en/pick-and-mix/*
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/bs_games_info.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/bs_games_info.user.js
-// @version     2019.03.30.1
+// @version     2019.08.28.1
 // @run-at      document-end
 // @connect     free.currencyconverterapi.com
 // @require     http://cdn.bootcss.com/jquery/3.1.0/jquery.min.js
@@ -152,8 +152,9 @@ unsafeWindow.api = function(){
                 d = $('.product-commerce-container');
             $(d[0]).append('<div class="col-12 col-md-6 col-lg-12"><div id="info" class="p-3 pl-md-1 pl-lg-3 card-body"></div></div>');
         }
+        // https://www.fanatical.com/api/products/fanatical-anthology-mega-bundle/en
         $.ajax({
-            url: `/api/products/${m[1]}`,
+            url: `/api/products/${m[1]}/en`,
             type: "GET",
             success: function(data){
                 var a = [];

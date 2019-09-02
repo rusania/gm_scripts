@@ -5,7 +5,7 @@
 // @include     https://help.steampowered.com/en/wizard/HelpWithGame/*appid=*
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/steam_package.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/steam_package.user.js
-// @version     2019.05.16.1
+// @version     2019.08.14.1
 // @run-at      document-end
 // @require     http://libs.baidu.com/jquery/1.10.1/jquery.min.js
 // @grant unsafeWindow
@@ -143,7 +143,7 @@ unsafeWindow.restoreman = function() {
             type: "POST",
             dataType : 'json',
         data: {
-            packageid: a,
+            packageid: sub,
             appid: app,
             sessionid: g_sessionID,
             wizard_ajax: 1
