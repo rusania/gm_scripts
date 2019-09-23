@@ -4,7 +4,7 @@
 // @include     http*://store.steampowered.com/cart*
 // @updateURL 	https://github.com/rusania/gm_scipts/raw/master/bl2_dlc_add_to_cart.user.js
 // @downloadURL https://github.com/rusania/gm_scipts/raw/master/bl2_dlc_add_to_cart.user.js
-// @version     2019.03.13.1
+// @version     2019.09.23.1
 // @run-at      document-end
 // @require     http://libs.baidu.com/jquery/1.10.1/jquery.min.js
 // @connect     steamdb.info
@@ -96,10 +96,9 @@ unsafeWindow.list = function(app, name) {
                 html = html.replace(/<img[^<>]*>/g, '');
                 var l = [];
                 $(html).find('.recommendation').each(function(){
-                    var a = $(this).find('a');
-                    var id = $(a[0]).attr('data-ds-appid');
-                    var t = $.trim($(a[1]).find('.color_created').text());
-                    var dt = $.trim($(a[1]).find('.curator_review_date').text());
+                    var id = $(this).attr('data-ds-appid');
+                    var t = $.trim($(this).find('.color_created').text());
+                    var dt = $.trim($(this).find('.curator_review_date').text());
                     var v = $(this).find('.discount_block');
                     var p = '';
                     var s = '';

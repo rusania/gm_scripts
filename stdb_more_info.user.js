@@ -9,7 +9,7 @@
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/stdb_more_info.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/stdb_more_info.user.js
 // @require     http://libs.baidu.com/jquery/1.10.1/jquery.min.js
-// @version     2019.08.01.1
+// @version     2019.09.23.1
 // @connect     store.steampowered.com
 // @grant       unsafeWindow
 // @grant       GM_xmlhttpRequest
@@ -79,7 +79,7 @@ unsafeWindow.comp = function(a) {
             type: 'GET',
             async: false,
         }).done(function (data) {
-            var h = $(data).find('.package-title')[0];
+            var h = $(data).find('.css-truncate')[0];
             $(h).children().first().remove();
             var t = $.trim($(h).text());
 
