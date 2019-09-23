@@ -9,7 +9,7 @@
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/hb_download_info.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/hb_download_info.user.js
 // @connect     steamdb.info
-// @version     2019.08.01.1
+// @version     2019.09.04.1
 // @run-at      document-end
 // @require     http://cdn.bootcss.com/jquery/3.1.0/jquery.min.js
 // @grant       GM_xmlhttpRequest
@@ -203,41 +203,50 @@ $('#region').click(function () {
 m = /games|mobile|software/.exec(document.URL);
 if (m){
     $('.base-main-wrapper').before('<div class="d" id="a1"></div>');
-    m = $('#webpack-bundle-data').html();
-    if (m){
-        var j = JSON.parse(m);
-        if (j && j.bundleVars) {
-            j = j.bundleVars;
-            $('#a1').append('<p>' + j.product_human_name + '</p>');
-            $('#a1').append('<p>' + j.hero_tile.machine_name + '</p>');
-            $('#a1').append('<p>' + j.hero_tile.tile_stamp + '</p>');
-            $('#a1').append('<p>' + j.order_form.product_json.start + '</p>');
-            $('#a1').append('<p>' + j.order_form.product_json.end + '</p>');
-            var f = j.order_form.checkout_tiers;
-            f.forEach(function (e) {
-                // is_bta
-                // is_initial_tier
-                // is_fixed
-                // is_free
-                // top_header_text
-                $('#a1').append('<p>' + e.price + '</p>');
-            });
-            f = j.slideout_data.display_items;
-            $('#a1').append('<table id="b"></table>');
-            var i = 1;
-            for (var k in f)
-            {
-                if (f[k].availability_icons){
-                    var g = [];
-                    f[k].availability_icons.delivery_icons.forEach(function (v) {
-                        g.push(v.replace('hb-', ''));
+    $.ajax({
+        url: document.URL,
+        type: "GET",
+        success: function(data){
+            m = /<script id="webpack-bundle-data" type="application\/json">([^<>]+)</.exec(data);
+            if (m){
+                var j = JSON.parse(m[1]);
+                if (j && j.bundleVars) {
+                    j = j.bundleVars;
+                    $('#a1').append('<p>' + j.product_human_name + '</p>');
+                    $('#a1').append('<p>' + j.hero_tile.machine_name + '</p>');
+                    $('#a1').append('<p>' + j.hero_tile.tile_stamp + '</p>');
+                    $('#a1').append('<p>' + j.order_form.product_json.start + '</p>');
+                    $('#a1').append('<p>' + j.order_form.product_json.end + '</p>');
+                    var f = j.order_form.checkout_tiers;
+                    f.forEach(function (e) {
+                        // is_bta
+                        // is_initial_tier
+                        // is_fixed
+                        // is_free
+                        // top_header_text
+                        $('#a1').append('<p>' + e.price + '</p>');
                     });
-                    $('#b').append('<tr><td>' + (i++) + '</td><td>' + f[k].machine_name + '</td><td>' + f[k].human_name + '</td><td>' +  g.join() +  '</td></tr>');
-                }
+                    f = j.slideout_data.display_items;
+                    $('#a1').append('<table id="b"></table>');
+                    var i = 1;
+                    for (var k in f)
+                    {
+                        if (f[k].availability_icons){
+                            var g = [];
+                            f[k].availability_icons.delivery_icons.forEach(function (v) {
+                                g.push(v.replace('hb-', ''));
+                            });
+                            $('#b').append('<tr><td>' + (i++) + '</td><td>' + f[k].machine_name + '</td><td>' + f[k].human_name + '</td><td>' +  g.join() +  '</td></tr>');
+                        }
 
+                    }
+                }
             }
+        },
+        error: function(data){
+            alert('error-key');
         }
-    }
+    });
 }
 
 m = /home\/keys/.exec(document.URL);

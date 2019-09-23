@@ -7,7 +7,7 @@
 //@include      https://www.fanatical.com/en/pick-and-mix/*
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/bs_games_info.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/bs_games_info.user.js
-// @version     2019.08.28.1
+// @version     2019.09.09.1
 // @run-at      document-end
 // @connect     free.currencyconverterapi.com
 // @require     http://cdn.bootcss.com/jquery/3.1.0/jquery.min.js
@@ -147,10 +147,10 @@ unsafeWindow.api = function(){
         if ($('#info').length > 0)
             $('#info').empty();
         else{
-            var d = $('.bundle-games-container');
+            var d = $('.description-age-container');
             if (d.length == 0)
                 d = $('.product-commerce-container');
-            $(d[0]).append('<div class="col-12 col-md-6 col-lg-12"><div id="info" class="p-3 pl-md-1 pl-lg-3 card-body"></div></div>');
+            $(d[0]).before('<div class="col-12 col-md-6 col-lg-12"><div id="info" class="p-3 pl-md-1 pl-lg-3 card-body"></div></div>');
         }
         // https://www.fanatical.com/api/products/fanatical-anthology-mega-bundle/en
         $.ajax({
@@ -172,7 +172,7 @@ unsafeWindow.api = function(){
                             if (v.steam){
                                 var sub = v.steam.sub ? 'sub' : 'app';
                                 var id = v.steam.id;
-                                $('#info').append(`<div>${k+1}.&nbsp;<a target=_blank href="https://steamdb.info/${sub}/${id}/">${v.name}</a>&nbsp;<a target=_blank href="https://steamdb.info/${sub}/${id}/">i</a></div>`);
+                                $('#info').append(`<div>${k+1}.&nbsp;<a target=_blank href="https://store.steampowered.com/${sub}/${id}/">${v.name}</a></div>`);
                             } else
                                 $('#info').append(`<div>${k+1}.&nbsp;${v.name}</div>`);
                         });
