@@ -19,7 +19,7 @@
 // @include     http://bundle.ccyycn.com/*
 // @include     https://www.steamgifts.com/discussion/Infm8/*
 // @exclude     https://steamcn.com/forum.php
-// @version     2019.08.01.1
+// @version     2019.09.26.1
 // @run-at      document-end
 // @connect     store.steampowered.com
 // @connect     steamcardexchange.net
@@ -81,10 +81,12 @@ $('#card').click(function(){upcard();});
 $('#mark').click(function(){
     $('.ruc').remove();
     $('.dbc').remove();
-    var b = $("a:not(.db)[href*='/app/'],[href*='/sub/'],[href*='-appid-']");
+    var b = $("a:not(.db)[href*='/app/'],[href*='/sub/'],[href*='-appid-'],[href*='gamelisting_']");
     mark(b);
     b = $("button[data-img*='/apps/'],[data-img*='/subs/']");
     mark2(b);
+    b = $("a:not(.db)[href*='gamelisting_']");
+    mark3(b);
 });
 
 $('#umark').click(function(){
@@ -236,6 +238,39 @@ function mark2(a){
             var ma = /steamdb.info/.exec(h);
             if (!ma)
                 $(this).after(` <a class="dbc" target=_blank href="https://steamdb.info/${tp}/${id}/" target=_blank>${dbIcon}</a>`);
+            $(this).after(html);
+        }
+    });
+}
+
+function mark3(a){
+    a.each(function(i, v){
+        var h = $(this).attr('href');
+        var m = /gamelisting_(\d+)/.exec(h);
+        if (m){
+            var id = parseInt(m[1]);
+            var html = '';
+            var card = '';
+            var color = unownedColor;
+            var icon = unownedIcon;
+
+            if ($.inArray(id, ownedApps) > -1){
+                color = ownedColor;
+                icon = ownedIcon;
+            }
+            else if ($.inArray(id, wishlist) > -1){
+                color = wishlistColor;
+                icon = wishlistIcon;
+            }
+            if (wantCards && r2.hasOwnProperty(id)){
+                card = ` <span class="ruc" style="color: ${cardColor}; cursor: help;">${cardIcon}</span>`;
+                $(this).after(card);
+            }
+
+            html = ` <span class="ruc" style="color: ${color}; cursor: help;">${icon}</span>`;
+            var ma = /steamdb.info/.exec(h);
+            if (!ma)
+                $(this).after(` <a class="dbc" target=_blank href="https://steamdb.info/app/${m[1]}/" target=_blank>${dbIcon}</a>`);
             $(this).after(html);
         }
     });
