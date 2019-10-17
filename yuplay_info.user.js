@@ -10,10 +10,11 @@
 // @include     http*://gamazavr.ru/orders/*
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/yuplay_info.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/yuplay_info.user.js
-// @version     2019.08.01.1
+// @version     2019.10.17.1
 // @run-at      document-end
 // @connect     data.fixer.io
 // @connect     198.181.32.5
+// @connect     45.78.74.83
 // @require     http://cdn.bootcss.com/jquery/3.1.0/jquery.min.js
 // @grant       GM_xmlhttpRequest
 // @grant       GM_log
@@ -28,12 +29,13 @@
 
 var r = GM_getValue("r", 0.0);
 var dt = GM_getValue("dt", 0);
+var host = '45.78.74.83';
 
 var match = /ru\/news\/(\d+)/.exec(document.URL);
 if (match) {
     $($('.navi').children() [0]).append('<li><a id="btn">INFO</a></li>');
     $('.section-main').append('<div>实时汇率：<span id="r"></ratio></div>');
-    $('.section-main').append('<a target="_blank" href="http://198.181.32.5/yuplay.php?o=html&cc=cn&n='+ match[1] +'">TRY IT</a>');
+    $('.section-main').append(`<a target="_blank" href="http://${host}/yuplay.php?o=html&cc=cn&n=${match[1]}">TRY IT</a>`);
     $('.section-main').append('<table id="info"></table>');
     $('#btn').click(function () {
         $('#info').empty();
@@ -112,12 +114,12 @@ if (match) {
     var total = $.trim($('td.total').text()).replace('pуб', 'RUB');
     var date = $('.number small').text();
     var d = new Date(`${date} GMT+0300`).toLocaleString();
-    var id = $('.number b').text();
-    $('#b').append(`<p>${total}<br>${date}<br>${d}<br>${id}</p>`);
+    var j = $('.number b').text();
+    $('#b').append(`<p>${total}<br>${date}<br>${d}<br>${j}</p>`);
     $('.product-info').each(function(i, v){
         var t = $.trim($(v).find('.name').text());
         var k = $(v).next('.keys').find('input').val();
-        $('#t').append(`<tr><td>${i}</td><td>${t}</td><td>${k}</td><td>#${id}</td><td>${total}</td></tr>`);
+        $('#t').append(`<tr><td>${i}</td><td>${t}</td><td>${k}</td><td>#${j}</td><td>${total}</td></tr>`);
         $('#c').append(`<p>${t}<br>${k}</p>`);
     });
 
@@ -150,8 +152,8 @@ $('#grid').click(function () {
 
 var getLow = function (p) {
     $('#db').empty();
-    var url = `http://198.181.32.5/yuplay.php?p=${p}`;
-    $('#db').append(`<p><a target="_blank" href="http://198.181.32.5/yuplay.php?p=${p}">API</a></p>`);
+    var url = `http://${host}/yuplay.php?p=${p}`;
+    $('#db').append(`<p><a target="_blank" href="http://${host}/yuplay.php?p=${p}">API</a></p>`);
     GM_xmlhttpRequest({
         method: 'GET',
         url: url,
