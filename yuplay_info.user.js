@@ -10,7 +10,7 @@
 // @include     http*://gamazavr.ru/orders/*
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/yuplay_info.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/yuplay_info.user.js
-// @version     2019.10.17.1
+// @version     2019.10.21.1
 // @run-at      document-end
 // @connect     data.fixer.io
 // @connect     198.181.32.5
@@ -73,7 +73,8 @@ if (match) {
             });
             var p = $(":contains('SUB_ID') > span");
             if (p.length > 0) {
-                p.after('<div id="db"></div>');
+                if ($('#db').length == 0)
+                    p.after('<div id="db"></div>');
                 getLow(id);
             }
         };
