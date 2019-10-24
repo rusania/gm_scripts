@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         stcn_show_li
 // @namespace    http://tampermonkey.net/
-// @version      2019.09.26.1
+// @version      2019.10.24.1
 // @description  try to take over the world!
 // @author       jacky
-// @match        https://steamcn.com/t*
+// @match        https://keylol.com/t*
 // @grant       unsafeWindow
 // @grant       GM_xmlhttpRequest
 // @run-at      document-end

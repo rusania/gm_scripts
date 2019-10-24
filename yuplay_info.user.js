@@ -10,7 +10,7 @@
 // @include     http*://gamazavr.ru/orders/*
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/yuplay_info.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/yuplay_info.user.js
-// @version     2019.10.21.1
+// @version     2019.10.23.1
 // @run-at      document-end
 // @connect     data.fixer.io
 // @connect     198.181.32.5
@@ -66,16 +66,18 @@ if (match) {
     $('#btn').click(function () {
         var f = function () {
             $('.ru').remove();
-            $('.price').each(function () {
-                var pr = (/(\d+)\s*руб/.exec($(this).text())) [1];
-                var q = (pr * r).toFixed(2);
-                $(this).append(`<span class="ru" style="color:red; font-weight: bold;">&yen;${q}</span>`);
-            });
+            var k = $('.price').first();
+            var pr = (/(\d+)\s*руб/.exec(k.text())) [1];
+            var q = (pr * r).toFixed(2);
+            k.append(`<span class="ru" style="color:red; font-weight: bold;">&yen;${q}</span>`);
             var p = $(":contains('SUB_ID') > span");
             if (p.length > 0) {
                 if ($('#db').length == 0)
                     p.after('<div id="db"></div>');
-                getLow(id);
+                if (pr > 0)
+                    getLow(id, pr);
+                else
+                    getLow(id, -1);
             }
         };
         getRatio('RUB', 'CNY', f);
@@ -151,10 +153,10 @@ $('#grid').click(function () {
     GM_setClipboard(txt);
 });
 
-var getLow = function (p) {
+var getLow = function (p, l) {
     $('#db').empty();
-    var url = `http://${host}/yuplay.php?p=${p}`;
-    $('#db').append(`<p><a target="_blank" href="http://${host}/yuplay.php?p=${p}">API</a></p>`);
+    var url = `http://${host}/yuplay.php?p=${p}&l=${l}`;
+    $('#db').append(`<p><a target="_blank" href="http://${host}/yuplay.php?p=${p}&l=${l}">API</a></p>`);
     GM_xmlhttpRequest({
         method: 'GET',
         url: url,

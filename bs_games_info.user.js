@@ -4,10 +4,10 @@
 // @description bs_games_info
 // @include     https://www.fanatical.com/en/game/*
 // @include     https://www.fanatical.com/en/bundle/*
-//@include      https://www.fanatical.com/en/pick-and-mix/*
+// @include     https://www.fanatical.com/en/pick-and-mix/*
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/bs_games_info.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/bs_games_info.user.js
-// @version     2019.09.09.1
+// @version     2019.10.23.1
 // @run-at      document-end
 // @connect     free.currencyconverterapi.com
 // @require     http://cdn.bootcss.com/jquery/3.1.0/jquery.min.js
@@ -148,8 +148,11 @@ unsafeWindow.api = function(){
             $('#info').empty();
         else{
             var d = $('.description-age-container');
-            if (d.length == 0)
+            if (d.length == 0){
                 d = $('.product-commerce-container');
+                if (d.length == 0)
+                    d = $('.stardeal-product-info-container');
+            }
             $(d[0]).before('<div class="col-12 col-md-6 col-lg-12"><div id="info" class="p-3 pl-md-1 pl-lg-3 card-body"></div></div>');
         }
         // https://www.fanatical.com/api/products/fanatical-anthology-mega-bundle/en
@@ -169,7 +172,7 @@ unsafeWindow.api = function(){
                     $.each(data.bundles, function(key, val) {
                         $('#info').append(`<div>Tier&nbsp;${key+1}</div>`);
                         $.each(val.games, function(k, v) {
-                            if (v.steam){
+                            if (v.steam && v.steam.id){
                                 var sub = v.steam.sub ? 'sub' : 'app';
                                 var id = v.steam.id;
                                 $('#info').append(`<div>${k+1}.&nbsp;<a target=_blank href="https://store.steampowered.com/${sub}/${id}/">${v.name}</a></div>`);
@@ -199,34 +202,32 @@ unsafeWindow.api = function(){
             d = $('.pnm-details-container');
             if (d.length == 0)
                 d = $('.product-commerce-container');
-            $(d[0]).append('<div class="col-12 col-md-6 col-lg-12"><div class="p-3 pl-md-1 pl-lg-3 card-body"><table><tr id="b"></tr></table></div></div>');
+            $(d[0]).append('<div class="col-12 col-md-6 col-lg-12"><div class="p-3 pl-md-1 pl-lg-3 card-body"><div id="b"></div></div></div>');
         }
         $.ajax({
-            url: `/api/promotions/${m[1]}`,
+            url: `/api/${m[0]}/en`,
             type: "GET",
             success: function(data){
-                $.each(data, function(key, val) {
-                    $('#b').append(`<td id="${key}"></td>`);
-                    var kv = `#${key}`;
-                    var t = (new Date(val.valid_from)).toLocaleString();
-                    $(kv).append(`<div>起始：${t}</div>`);
-                    t = (new Date(val.valid_until)).toLocaleString();
-                    $(kv).append(`<div>截止：${t}</div>`);
+                var t = (new Date(data.valid_from)).toLocaleString();
+                $('#b').append(`<div>起始：${t}</div>`);
+                t = (new Date(data.valid_until)).toLocaleString();
+                $('#b').append(`<div>截止：${t}</div>`);
 
-                    $.each(val.products, function(k, v) {
-                        if (v.steam){
-                            var sub = v.steam.sub ? 'sub' : 'app';
-                            var id = v.steam.id;
-                            $(kv).append(`<div>${k+1}.&nbsp;<a target=_blank href="https://steamdb.info/${sub}/${id}/">${v.name}</a>&nbsp;<a target=_blank href="https://steamdb.info/${sub}/${id}/">i</a></div>`);
-                        } else
-                            $(kv).append(`<div>${k+1}.&nbsp;${v.name}</div>`);
-                    });
-                    $(kv).append(`<table id="c${key}" style="text-align:right"><tr><td>货币</td><td>现价</td><td>折算</td></tr></table>`);
-                    $.each(val.price, function(k, v) {
+                $.each(data.products, function(k, v) {
+                    if (v.steam && v.steam.id){
+                        var sub = v.steam.sub ? 'sub' : 'app';
+                        var id = v.steam.id;
+                        $('#b').append(`<div>${k+1}.&nbsp;<a target=_blank href="https://steamdb.info/${sub}/${id}/">${v.name}</a>&nbsp;<a target=_blank href="https://steamdb.info/${sub}/${id}/">i</a></div>`);
+                    } else
+                        $('#b').append(`<div>${k+1}.&nbsp;${v.name}</div>`);
+                });
+                $.each(data.tiers, function(j, w) {
+                    $('#b').append(`<table id="c${j}" style="text-align:right"><tr><td>${w.quantity}</td><td>现价</td><td>折算</td></tr></table>`);
+                    $.each(w.price, function(k, v) {
                         var s = v / 100;
                         var l = ratio(k, 'CNY');
                         l = (s * l).toFixed(2);
-                        $('#c'+key).append(`<tr><td>${k}</td><td>${s}</td><td>${l}</td></tr>`);
+                        $('#c'+j).append(`<tr><td>${k}</td><td>${s}</td><td>${l}</td></tr>`);
                     });
                 });
             },

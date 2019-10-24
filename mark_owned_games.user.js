@@ -7,11 +7,13 @@
 // @include     https://www.indiegala.com/gift?gift_id=*
 // @include     http*://*steamcardexchange.net/index.php?boosterprices
 // @include     http*://*steamcardexchange.net/index.php?badgeprices
-// @include     http*://*steamcn.com/t*
-// @include     http*://*steamcn.com/forum.php?mod=viewthread*
+// @include     http*://*keylol.com/t*
+// @include     http*://*keylol.com/forum.php?mod=viewthread*
 // @include     https://steamcommunity.com/sharedfiles/filedetails/?id=*
 // @include     https://store.steampowered.com/cart*
+// @include     https://www.fanatical.com/en/game/*
 // @include     https://www.fanatical.com/en/bundle/*
+// @include     https://www.fanatical.com/en/pick-and-mix/*
 // @include     https://www.indiegala.com/gift?gift_id=*
 // @include     http://wtfprice.ru*
 // @include     http://198.181.32.5/*
@@ -20,7 +22,7 @@
 // @include     http://bundle.ccyycn.com/*
 // @include     https://www.steamgifts.com/discussion/Infm8/*
 // @exclude     https://steamcn.com/forum.php
-// @version     2019.10.15.1
+// @version     2019.10.24.1
 // @run-at      document-end
 // @connect     store.steampowered.com
 // @connect     steamcardexchange.net
