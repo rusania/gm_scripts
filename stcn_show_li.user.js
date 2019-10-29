@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         stcn_show_li
 // @namespace    http://tampermonkey.net/
-// @version      2019.10.24.1
+// @version      2019.10.29.1
 // @description  try to take over the world!
 // @author       jacky
 // @match        https://keylol.com/t*
+// @connect     keylol.com
 // @grant       unsafeWindow
 // @grant       GM_xmlhttpRequest
 // @run-at      document-end
@@ -20,7 +21,7 @@ $('#a').click(function(){
         var t = $(l[0]).attr('onclick');
         var m = /tid=(\d+)&viewpid=(\d+)/.exec($(l[0]).attr('onclick'));
         if (m){
-            var u = `https://steamcn.com/forum.php?mod=viewthread&tid=${m[1]}&extra=page%3D1&mobile=2`;
+            var u = `/forum.php?mod=viewthread&tid=${m[1]}&extra=page%3D1&mobile=2`;
             GM_xmlhttpRequest({
                 method: "GET",
                 url: u,
