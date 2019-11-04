@@ -6,7 +6,7 @@
 // @include		http*://store.steampowered.com/explore*
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/steam_queue.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/steam_queue.user.js
-// @version     2019.07.04.1
+// @version     2019.11.01.1
 // @connect     steamdb.info
 // @grant       unsafeWindow
 // @grant       GM_xmlhttpRequest
@@ -99,9 +99,37 @@ unsafeWindow.list = function() {
     }
 }
 
+unsafeWindow.wish = function(f) {
+    $('#er').empty();
+    url = f ? '/api/addtowishlist' : '/api/removefromwishlist';
+    var m = /app\/(\d+)/.exec(document.URL);
+    if (m){
+        $.ajax({
+            url: url,
+            type: 'POST',
+            dataType : 'json',
+            data: {
+                appid: m[1],
+                sessionid: g_sessionID,
+            },
+            success: function( data, status, xhr ){
+                if (data.success){
+                    $('#er').append("true");
+                }
+                else{
+                    $('#er').append("false");
+                }
+            },
+            fail: function( data, status, xhr ){
+                $('#er').append(status);
+            }
+        });
+    }
+}
+
 var ap = $('.apphub_OtherSiteInfo');
 if (ap.length > 0){
-    ap.append('<a class="btnv6_blue_hoverfade btn_medium" href="javascript:void(0);" onclick="list($);"><span>Info</span></a>');
+    ap.append('<a class="btnv6_blue_hoverfade btn_medium" href="javascript:void(0);" onclick="list();"><span>Info</span></a>');
 }
 
 var m = /back tomorrow to earn more/.exec(document.body.innerHTML);
@@ -128,6 +156,9 @@ if (m){
     if (m) {
         m = /\d+/.exec(location.href);
         var url = `/app/${m[0]}`;
+        $('#error_box').append('<br><span class="error" id="er"></span>');
+        $('#error_box').after('<a id="w" class="btnv6_blue_hoverfade btn_medium" href="javascript:void(0);" onclick="wish(false);"><span>RemoveWish</span></a>');
+        $('#error_box').after('<a id="w" class="btnv6_blue_hoverfade btn_medium" href="javascript:void(0);" onclick="wish(true);"><span>Wish</span></a>');
         $.ajax({
             url: url,
             type: "POST",

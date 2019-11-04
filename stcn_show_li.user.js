@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         stcn_show_li
 // @namespace    http://tampermonkey.net/
-// @version      2019.10.24.1
+// @version      2019.11.04.1
 // @description  try to take over the world!
 // @author       jacky
 // @match        https://keylol.com/t*
+// @connect     keylol.com
 // @grant       unsafeWindow
 // @grant       GM_xmlhttpRequest
 // @run-at      document-end
@@ -20,7 +21,7 @@ $('#a').click(function(){
         var t = $(l[0]).attr('onclick');
         var m = /tid=(\d+)&viewpid=(\d+)/.exec($(l[0]).attr('onclick'));
         if (m){
-            var u = `https://steamcn.com/forum.php?mod=viewthread&tid=${m[1]}&extra=page%3D1&mobile=2`;
+            var u = `/forum.php?mod=viewthread&tid=${m[1]}&extra=page%3D1&mobile=2`;
             GM_xmlhttpRequest({
                 method: "GET",
                 url: u,
@@ -28,7 +29,7 @@ $('#a').click(function(){
                     "User-Agent":" Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1"
                 },
                 onload: function(response) {
-                    var s = $(response.responseText).find("#pid" + m[2] +" .pi .message");
+                    var s = $(response.responseText).find(`#pid${m[2]} div .message`);
                     if(s)
                         $('#b').append(s);
                 },
