@@ -1,7 +1,11 @@
 // ==UserScript==
 // @name         stcn_show_li
 // @namespace    http://tampermonkey.net/
+<<<<<<< HEAD
 // @version      2019.11.04.1
+=======
+// @version      2019.10.29.1
+>>>>>>> origin/master
 // @description  try to take over the world!
 // @author       jacky
 // @match        https://keylol.com/t*
