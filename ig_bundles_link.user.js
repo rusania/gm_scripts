@@ -6,7 +6,7 @@
 // @icon        http://www.indiegala.com/favicon.ico
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/ig_bundles_link.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/ig_bundles_link.user.js
-// @version     2019.08.01.1
+// @version     2019.11.18.1
 // @run-at      document-end
 // @require     http://libs.baidu.com/jquery/1.10.1/jquery.min.js
 // @grant       GM_xmlhttpRequest
@@ -40,7 +40,7 @@ if (nv.length > 0){
         bl.before('<table id="bl"></table>');
         bl.before('<div><a id="ajax">AJAX</a></div>');
         bl.before('<div><a id="lib">LIB</a></div>');
-        bl.before(`<form id="f" action="http://198.181.32.5/ig_sale.php?c=sale&u=${uid}" method="post" target="_blank"></form>`);
+        bl.before(`<form id="f" action="http://176.122.178.89/ig_sale.php?c=sale&u=${uid}" method="post" target="_blank"></form>`);
         nv.each(function () {
             var id = $(this).attr('id');
             text = $(this).text()

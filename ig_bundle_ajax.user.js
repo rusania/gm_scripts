@@ -7,7 +7,7 @@
 // @icon        http://www.indiegala.com/favicon.ico
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/ig_bundle_ajax.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/ig_bundle_ajax.user.js
-// @version     2019.08.01.1
+// @version     2019.11.18.1
 // @run-at      document-end
 // @grant       unsafeWindow
 // @require     http://libs.baidu.com/jquery/1.10.1/jquery.min.js
@@ -252,7 +252,7 @@ function showgift()
         var m = /id=(\d+)/.exec(document.URL);
         if (m)
             s = m[1];
-        bk.append(`<form id="f" action="http://198.181.32.5/ig_sale.php?c=gift&s=${s}&d=${dt}" method="post" target="_blank"></form>`);
+        bk.append(`<form id="f" action="http://176.122.178.89/ig_sale.php?c=gift&s=${s}&d=${dt}" method="post" target="_blank"></form>`);
         $('#area_gifts tr').each(function () {
             var t = $(this).find('td');
             var g = '';

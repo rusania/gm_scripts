@@ -9,7 +9,7 @@
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/stdb_more_info.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/stdb_more_info.user.js
 // @require     http://libs.baidu.com/jquery/1.10.1/jquery.min.js
-// @version     2019.10.17.1
+// @version     2019.11.18.1
 // @connect     store.steampowered.com
 // @grant       unsafeWindow
 // @grant       GM_xmlhttpRequest
@@ -22,7 +22,7 @@
 var rgWishlist = GM_getValue("rgWishlist", "[]");
 var rgOwnedPackages = GM_getValue("rgOwnedPackages", "[]");
 var rgOwnedApps = GM_getValue("rgOwnedApps", "[]");
-var host = '45.78.74.83';
+var host = '176.122.178.89';
 
 var m = /(sub|app)\/(\d+)/.exec(document.URL);
 var p = $('.package');
@@ -34,10 +34,11 @@ if (p.length > 0){
         var id = $(this).attr('data-subid');
         $(this).append('<td><input type="checkbox" value="' + id + '">sub/' + id + '</td>');
     });
-    $('.tab-content').after('<table class="table table-bordered" id="g"></table>');
-    $('.tab-content').after('<table class="table table-bordered" id="b"></table>');
-    $('.tab-content').after('<table class="table table-bordered" id="p"></table>');
-    $('.tab-content').after('<div id="l"></div>');
+
+    $('.tab-content').append('<div id="l"></div>');
+    $('.tab-content').append('<table class="table table-bordered" id="p"></table>');
+    $('.tab-content').append('<table class="table table-bordered" id="b"></table>');
+    $('.tab-content').append('<table class="table table-bordered" id="g"></table>');
 }
 
 $('.app').each(function(){

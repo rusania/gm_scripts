@@ -17,12 +17,13 @@
 // @include     https://www.indiegala.com/gift?gift_id=*
 // @include     http://wtfprice.ru*
 // @include     http://198.181.32.5/*
+// @include     http://176.122.178.89/*
 // @include     http://45.78.74.83/*
 // @include     https://www.youshangames.com/wholesale-center.html*
 // @include     http://bundle.ccyycn.com/*
 // @include     https://www.steamgifts.com/discussion/Infm8/*
 // @exclude     https://steamcn.com/forum.php
-// @version     2019.10.24.1
+// @version     2019.11.18.1
 // @run-at      document-end
 // @connect     store.steampowered.com
 // @connect     steamcardexchange.net

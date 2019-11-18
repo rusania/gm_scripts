@@ -10,10 +10,11 @@
 // @include     http*://gamazavr.ru/orders/*
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/yuplay_info.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/yuplay_info.user.js
-// @version     2019.10.23.1
+// @version     2019.11.18.1
 // @run-at      document-end
 // @connect     data.fixer.io
 // @connect     198.181.32.5
+// @connect     176.122.178.89
 // @connect     45.78.74.83
 // @require     http://cdn.bootcss.com/jquery/3.1.0/jquery.min.js
 // @grant       GM_xmlhttpRequest
@@ -29,7 +30,7 @@
 
 var r = GM_getValue("r", 0.0);
 var dt = GM_getValue("dt", 0);
-var host = '45.78.74.83';
+var host = '176.122.178.89';
 
 var match = /ru\/news\/(\d+)/.exec(document.URL);
 if (match) {
