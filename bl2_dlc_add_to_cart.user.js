@@ -4,7 +4,7 @@
 // @include     http*://store.steampowered.com/cart*
 // @updateURL 	https://github.com/rusania/gm_scipts/raw/master/bl2_dlc_add_to_cart.user.js
 // @downloadURL https://github.com/rusania/gm_scipts/raw/master/bl2_dlc_add_to_cart.user.js
-// @version     2019.09.23.1
+// @version     2020.01.13.1
 // @run-at      document-end
 // @require     http://libs.baidu.com/jquery/1.10.1/jquery.min.js
 // @connect     steamdb.info
@@ -96,7 +96,10 @@ unsafeWindow.list = function(app, name) {
                 html = html.replace(/<img[^<>]*>/g, '');
                 var l = [];
                 $(html).find('.recommendation').each(function(){
-                    var id = $(this).attr('data-ds-appid');
+                    var a = $(this).find('a');
+                    var id = 0;
+                    if (a.length > 0)
+                        id = $(a[0]).attr('data-ds-appid');
                     var t = $.trim($(this).find('.color_created').text());
                     var dt = $.trim($(this).find('.curator_review_date').text());
                     var v = $(this).find('.discount_block');
@@ -129,8 +132,12 @@ unsafeWindow.getlow = function(app) {
         onload: function(response) {
             var r = JSON.parse(response.responseText);
             var id = `#${app}`;
-            var l = r.data.lowest;
-            $(id).append(`<div>${l.price}</div><div>-${l.discount}%</div><div>${l.date}</div>`);
+            if (r.success){
+                if (r.data){
+                    var l = r.data.lowest;
+                    $(id).append(`<div>${l.price}</div><div>-${l.discount}%</div><div>${l.date}</div>`);
+                }
+            }
         },
         onerror:  function(response) {
         },

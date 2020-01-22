@@ -22,8 +22,7 @@
 // @include     https://www.youshangames.com/wholesale-center.html*
 // @include     http://bundle.ccyycn.com/*
 // @include     https://www.steamgifts.com/discussion/Infm8/*
-// @exclude     https://steamcn.com/forum.php
-// @version     2019.11.18.1
+// @version     2020.01.13.1
 // @run-at      document-end
 // @connect     store.steampowered.com
 // @connect     steamcardexchange.net
@@ -49,6 +48,8 @@ const wishlistIcon = "&#10084;"; // HTML entity code for '❤' (default).
 const wishlistColor = "blue"; // Color of the icon for wishlisted apps.
 const ownedIcon = "&#10004;"; // HTML entity code for '✔' (default).
 const ownedColor = "green"; // Color of the icon for owned apps and subs.
+const cartIcon = "&#35;";
+const cartColor = "yellow";
 const unownedIcon = "&#10008;"; // HTML entity code for '✘' (default).
 const unownedColor = "red"; // Color of the icon for unowned apps and subs.
 const decommissionedIcon = "&#128465;"; // HTML entity code for '🗑' (default).
@@ -71,6 +72,8 @@ var ignoredApps = r.rgIgnoredApps;
 var ownedApps = r.rgOwnedApps;
 var ownedPackages = r.rgOwnedPackages;
 var wishlist = r.rgWishlist;
+var cartApps = r.rgAppsInCart;
+var cartPackages = r.rgPackagesInCart;
 
 $('body').append('<center><div id="ru"></div></center>');
 $('#ru').append('<a id="upd" style="cursor: default;" title="'+ (new Date(dt)).toLocaleString() +'">UPDATE</a>');
@@ -137,6 +140,8 @@ function update(){
                 ownedApps = r.rgOwnedApps;
                 ownedPackages = r.rgOwnedPackages;
                 wishlist = r.rgWishlist;
+                cartApps = r.rgAppsInCart;
+                cartPackages = r.rgPackagesInCart;
                 //alert("complete");
             } else {
                 alert("error");
@@ -192,13 +197,24 @@ function mark(a){
                     color = wishlistColor;
                     icon = wishlistIcon;
                 }
+                if ($.inArray(id, cartApps) > -1){
+                    color = cartColor;
+                    icon = cartIcon;
+                }
                 if (wantCards && r2.hasOwnProperty(id)){
                     card = ` <span class="ruc" style="color: ${cardColor}; cursor: help;">${cardIcon}</span>`;
                     $(this).after(card);
                 }
-            } else if ($.inArray(id, ownedPackages) > -1){
-                color = ownedColor;
-                icon = ownedIcon;
+            }
+            else {
+                if ($.inArray(id, ownedPackages) > -1){
+                    color = ownedColor;
+                    icon = ownedIcon;
+                }
+                if ($.inArray(id, cartPackages) > -1){
+                    color = cartColor;
+                    icon = cartIcon;
+                }
             }
             html = ` <span class="ruc" style="color: ${color}; cursor: help;">${icon}</span>`;
             var ma = /steamdb.info/.exec(h);
@@ -229,14 +245,25 @@ function mark2(a){
                     color = wishlistColor;
                     icon = wishlistIcon;
                 }
+                if ($.inArray(id, cartApps) > -1){
+                    color = cartColor;
+                    icon = cartIcon;
+                }
                 if (wantCards && r2.hasOwnProperty(id)){
                     card = ` <span class="ruc" style="color: ${cardColor}; cursor: help;">${cardIcon}</span>`;
                     $(this).after(card);
                 }
-            } else if ($.inArray(id, ownedPackages) > -1){
-                color = ownedColor;
-                icon = ownedIcon;
-                tp = 'sub';
+            }
+            else {
+                if ($.inArray(id, ownedPackages) > -1){
+                    color = ownedColor;
+                    icon = ownedIcon;
+                    tp = 'sub';
+                }
+                if ($.inArray(id, cartPackages) > -1){
+                    color = cartColor;
+                    icon = cartIcon;
+                }
             }
             html = ` <span class="ruc" style="color: ${color}; cursor: help;">${icon}</span>`;
             var ma = /steamdb.info/.exec(h);
@@ -265,6 +292,10 @@ function mark3(a){
             else if ($.inArray(id, wishlist) > -1){
                 color = wishlistColor;
                 icon = wishlistIcon;
+            }
+            if ($.inArray(id, cartApps) > -1){
+                color = cartColor;
+                icon = cartIcon;
             }
             if (wantCards && r2.hasOwnProperty(id)){
                 card = ` <span class="ruc" style="color: ${cardColor}; cursor: help;">${cardIcon}</span>`;
