@@ -3,13 +3,15 @@
 // @namespace   http://tampermonkey.net/
 // @description hb download info
 // @include     http*://www.humblebundle.com/*
+// @include     http*://www.humblebundle.com/subscription/*
 // @include     http*://www.humblebundle.com/games/*
 // @include     http*://www.humblebundle.com/software/*
 // @include     http*://www.humblebundle.com/*?key=*
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/hb_download_info.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/hb_download_info.user.js
 // @connect     steamdb.info
-// @version     2019.11.18.1
+// @grant       unsafeWindow
+// @version     2020.02.08.1
 // @run-at      document-end
 // @require     http://cdn.bootcss.com/jquery/3.1.0/jquery.min.js
 // @grant       GM_xmlhttpRequest
@@ -24,6 +26,26 @@ GM_addStyle(".d{font-size:16px;color:white !important;}");
 var m = /country_code: "([^"]+)/.exec(document.head.innerHTML);
 if (m) {
     $('.tabs-navbar-item').append('<div class="navbar-item button-title">' + m[1] + '</div>');
+    $('.tabs-navbar-item').append('<a class="navbar-item not-dropdown button-title" href="javascript:void(0);" onclick="tax();">TAX</a><span class="navbar-item not-dropdown button-title" id="tax"></span>');
+}
+
+unsafeWindow.tax = function(a){
+    $('#tax').empty();
+    $.ajax({
+        url: '/api/v1/tax_rate',
+        type: "GET",
+        dataType : 'json',
+        success: function( data, status, xhr ){
+            if (data.tax_rate){
+                $('#tax').after(data.tax_rate);
+            } else {
+                $('#tax').after("0");
+            }
+        },
+        fail: function( data, status, xhr ){
+            alert(status);
+        }
+    });
 }
 
 m = /downloads/.exec(document.URL);
@@ -269,5 +291,99 @@ if (m){
             $('#b').append(`<tr><td>${game}</td><td>${serial}</td><td>${bundle}</td><td>${ke}</td></tr>`);
         });
     });
+}
+
+m = /subscription/.exec(document.URL);
+if (m){
+    $('.tabs-navbar-item').append('<a class="navbar-item not-dropdown button-title" href="javascript:void(0);" onclick="show();">INFO</a>');
+    $('.content-choices-wrapper').before('<div class="d" id="a1"></div>');
+
+    unsafeWindow.show = function(){
+        $('#a1').empty();
+        $.ajax({
+            url: document.URL,
+            type: "GET",
+            success: function(data){
+                m = /<script id="(webpack-subscriber-hub-data|webpack-monthly-product-data)" type="application\/json">([^<>]+)</.exec(data);
+                if (m){
+                    var j = JSON.parse(m[2]);
+                    if (j && j.contentChoiceOptions) {
+                        var gamekey = j.contentChoiceOptions.gamekey;
+                        if (j.monthlyJoinDate)
+                            $('#a1').append(`<p>${j.monthlyJoinDate}</p>`);
+                        if (j.nextBilledPlanProductHumanName)
+                            $('#a1').append(`<p>${j.nextBilledPlanProductHumanName}</p>`);
+                        if(j.payEarlyOptions){
+                            $('#a1').append(`<p>${j.payEarlyOptions.activeContentStart}</p>`);
+                            $('#a1').append(`<p>${j.payEarlyOptions.productMachineName}</p>`);
+                        }
+                        $('#a1').append(`<p><a target=_blank href="/subscription/${j.contentChoiceOptions.productUrlPath}">${j.contentChoiceOptions.title}</a></p>`);
+                        $('#a1').append(`<p><a target=_blank href="/?key=${gamekey}">${gamekey}</a></p>`);
+                        $('#a1').append(`<p>${j.contentChoiceOptions.contentChoiceData.initial.total_choices}</p>`);;
+                        var g = j.contentChoiceOptions.contentChoiceData.initial.content_choices;
+                        $('#a1').append('<table id="b"></table>');
+                        $('#a1').append(`<p>Key:</p>`);
+                        $('#a1').append('<table id="c"></table>');
+                        var n = 1;
+                        $.each(j.contentChoiceOptions.contentChoiceData.initial.display_order, function (i, e) {
+                            $('#b').append(`<tr id="${e}"><td>${(i+1)}</td><td>${e}</td><td>${g[e].title}</td><td>${g[e]['msrp|money'].amount}</td><td>${g[e].delivery_methods.join()}</td><td><a href="javascript:void(0);" onclick="choice('${gamekey}', '${e}');">Claim</a></td></tr>`);
+                            if (g[e].tpkds){
+                                $.each(g[e].tpkds, function (k, item) {
+                                    var app = '';
+                                    id = item.steam_app_id;
+                                    if (id)
+                                        app = `<a target=_blank href="https://steamdb.info/app/${id}/">${id}</a>`;
+                                    var region = item.key_type;
+                                    var exc = '<td>-</td>';
+                                    if (item.exclusive_countries.length){
+                                        id = item.exclusive_countries;
+                                        exc = `<td title="${id}">List</td>`;
+                                        region += '+,';
+                                    }
+                                    var dis = '<td>-</td>';
+                                    if (item.disallowed_countries.length){
+                                        id = item.disallowed_countries;
+                                        dis = `<td title="${id}">List</td>`;
+                                        region += '-,';
+                                    }
+                                    var key = item.redeemed_key_val ? item.redeemed_key_val : '';
+                                    $('#c').append(`<tr><td>${(n++)}</td><td>${item.machine_name}</td><td>${item.human_name}</td><td>${key}</td><td>${app}</td>${exc}${dis}</td></tr>`);
+                                });
+                            }
+                        });
+                        $.each(j.contentChoiceOptions.contentChoiceData.extras, function (i, e) {
+                            $('#b').append(`<tr><td>${(i+1)}</td><td>${e.machine_name}</td><td>${e.human_name}</td><td></td><td>${e.types.join()}</td><td></td></tr>`);
+                        });
+                        $.each(j.contentChoiceOptions.contentChoicesMade.initial.choices_made, function (i, e) {
+                            $(`#${e}`).css("background-color","blue");
+                        });
+                    }
+                }
+            },
+            error: function(data){
+                alert('error-key');
+            }
+        });
+    }
+
+    unsafeWindow.choice = function(a, b){
+        $.ajax({
+            url: `/humbler/choosecontent?gamekey=${a}&parent_identifier=initial&chosen_identifier=${b}`,
+            type: "GET",
+            dataType:'json',
+            success: function(data){
+                // {"errors": {"dummy": ["You have no choices remaining. Please refresh this page to see your choices."]}, "success": false}
+                if (data.success)
+                    $(`#${b}`).css("background-color","blue");
+                else{
+                    $(`#${b}`).attr('title', data.errors.dummy);
+                    $(`#${b}`).css("background-color","red");
+                }
+            },
+            error: function(data){
+                $(`#${b}`).css("background-color","yellow");
+            }
+        });
+    }
 }
 
