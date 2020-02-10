@@ -11,7 +11,7 @@
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/hb_download_info.user.js
 // @connect     steamdb.info
 // @grant       unsafeWindow
-// @version     2020.02.08.1
+// @version     2020.02.10.1
 // @run-at      document-end
 // @require     http://cdn.bootcss.com/jquery/3.1.0/jquery.min.js
 // @grant       GM_xmlhttpRequest
@@ -308,7 +308,6 @@ if (m){
                 if (m){
                     var j = JSON.parse(m[2]);
                     if (j && j.contentChoiceOptions) {
-                        var gamekey = j.contentChoiceOptions.gamekey;
                         if (j.monthlyJoinDate)
                             $('#a1').append(`<p>${j.monthlyJoinDate}</p>`);
                         if (j.nextBilledPlanProductHumanName)
@@ -318,7 +317,13 @@ if (m){
                             $('#a1').append(`<p>${j.payEarlyOptions.productMachineName}</p>`);
                         }
                         $('#a1').append(`<p><a target=_blank href="/subscription/${j.contentChoiceOptions.productUrlPath}">${j.contentChoiceOptions.title}</a></p>`);
-                        $('#a1').append(`<p><a target=_blank href="/?key=${gamekey}">${gamekey}</a></p>`);
+                        var f = j.contentChoiceOptions.gamekey ? true : false;
+                        var gamekey, made;
+                        if (f){
+                            gamekey = j.contentChoiceOptions.gamekey;
+                            made = j.contentChoiceOptions.contentChoicesMade.initial.choices_made;
+                            $('#a1').append(`<p><a target=_blank href="/?key=${gamekey}">${gamekey}</a></p>`);
+                        }
                         $('#a1').append(`<p>${j.contentChoiceOptions.contentChoiceData.initial.total_choices}</p>`);;
                         var g = j.contentChoiceOptions.contentChoiceData.initial.content_choices;
                         $('#a1').append('<table id="b"></table>');
@@ -326,7 +331,15 @@ if (m){
                         $('#a1').append('<table id="c"></table>');
                         var n = 1;
                         $.each(j.contentChoiceOptions.contentChoiceData.initial.display_order, function (i, e) {
-                            $('#b').append(`<tr id="${e}"><td>${(i+1)}</td><td>${e}</td><td>${g[e].title}</td><td>${g[e]['msrp|money'].amount}</td><td>${g[e].delivery_methods.join()}</td><td><a href="javascript:void(0);" onclick="choice('${gamekey}', '${e}');">Claim</a></td></tr>`);
+                            $('#b').append(`<tr id="${e}"></tr>`);
+                            var claim = '';
+                            if (f) {
+                                if ($.inArray(e, made)<0)
+                                    claim = `<a href="javascript:void(0);" onclick="choice('${gamekey}', '${e}');">Claim</a>`;
+                                else
+                                    $(`#${e}`).css("background-color", "blue");
+                            }
+                            $(`#${e}`).append(`<td>${(i+1)}</td><td>${e}</td><td>${g[e].title}</td><td>${g[e]['msrp|money'].amount}</td><td>${g[e].delivery_methods.join()}</td><td>${claim}</td>`);
                             if (g[e].tpkds){
                                 $.each(g[e].tpkds, function (k, item) {
                                     var app = '';
@@ -336,26 +349,26 @@ if (m){
                                     var region = item.key_type;
                                     var exc = '<td>-</td>';
                                     if (item.exclusive_countries.length){
-                                        id = item.exclusive_countries;
-                                        exc = `<td title="${id}">List</td>`;
+                                        exc = `<td title="${item.exclusive_countries}">List</td>`;
                                         region += '+,';
                                     }
                                     var dis = '<td>-</td>';
                                     if (item.disallowed_countries.length){
-                                        id = item.disallowed_countries;
-                                        dis = `<td title="${id}">List</td>`;
+                                        dis = `<td title="${item.disallowed_countries}">List</td>`;
                                         region += '-,';
                                     }
-                                    var key = item.redeemed_key_val ? item.redeemed_key_val : '';
-                                    $('#c').append(`<tr><td>${(n++)}</td><td>${item.machine_name}</td><td>${item.human_name}</td><td>${key}</td><td>${app}</td>${exc}${dis}</td></tr>`);
+                                    var key = '';
+                                    var redeem = '';
+                                    if (item.redeemed_key_val)
+                                        key = item.redeemed_key_val;
+                                    else
+                                        redeem = `<a href="javascript:void(0);" onclick="redeem('${item.machine_name}', '${item.gamekey}', ${k}, '${id}');">Redeem</a>`;
+                                    $('#c').append(`<tr><td>${(n++)}</td><td>${item.machine_name}</td><td>${item.human_name}</td><td id="${id}">${key}</td><td>${app}</td>${exc}${dis}</td><td>${redeem}</td></tr>`);
                                 });
                             }
                         });
                         $.each(j.contentChoiceOptions.contentChoiceData.extras, function (i, e) {
                             $('#b').append(`<tr><td>${(i+1)}</td><td>${e.machine_name}</td><td>${e.human_name}</td><td></td><td>${e.types.join()}</td><td></td></tr>`);
-                        });
-                        $.each(j.contentChoiceOptions.contentChoicesMade.initial.choices_made, function (i, e) {
-                            $(`#${e}`).css("background-color","blue");
                         });
                     }
                 }
@@ -382,6 +395,30 @@ if (m){
             },
             error: function(data){
                 $(`#${b}`).css("background-color","yellow");
+            }
+        });
+    }
+
+    unsafeWindow.redeem = function(a, b, c, d){
+        $.ajax({
+            url: `/humbler/redeemkey`,
+            type: "POST",
+            data: {
+                keytype: a,
+                key: b,
+                keyindex: c
+            },
+            dataType:'json',
+            success: function(data){
+                if (data.success)
+                    $(`#${d}`).append(data.key);
+                else{
+                    $(`#${d}`).append(data.error_msg);
+                    $(`#${d}`).css("background-color","red");
+                }
+            },
+            error: function(data){
+                $(`#${d}`).append('err2');
             }
         });
     }

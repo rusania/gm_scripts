@@ -6,7 +6,7 @@
 // @grant unsafeWindow
 // @updateURL https://github.com/rusania/gm_scipts/raw/master/steam_add_free.user.js
 // @downloadURL https://github.com/rusania/gm_scipts/raw/master/steam_add_free.user.js
-// @version     2019.05.14.1
+// @version     2020.02.07.1
 // @run-at      document-end
 // @require     http://libs.baidu.com/jquery/1.10.1/jquery.min.js
 // @connect     steamdb.info
@@ -18,7 +18,7 @@
 // ==/UserScript==
 $('h2.pageheader').after( '<div id="box" style="margin-top: 10px; margin-bottom: -20px; color: #8f98a0;"></div>');
 $('#box').append('<a class="btnv6_blue_hoverfade btn_small_tall" href="javascript:void(0);" onclick="addman();" style="float: right;"><span>Add</span></a>');
-$('#box').append('<a class="btnv6_blue_hoverfade btn_small_tall" href="javascript:void(0);" onclick="nocost();" style="float: right;"><span>NoCost</span></a>');
+$('#box').append('<a class="btnv6_blue_hoverfade btn_small_tall" href="javascript:void(0);" onclick="country();" style="float: right;"><span>Country</span></a>');
 $('#box').append('<a class="btnv6_blue_hoverfade btn_small_tall" href="javascript:void(0);" onclick="free();" style="float: right;"><span>Free</span></a>');
 $('#box').append('<a class="btnv6_blue_hoverfade btn_small_tall" href="javascript:void(0);" onclick="err();" style="float: right;"><span>Err</span></a>');
 $('#box').append('<a class="btnv6_blue_hoverfade btn_small_tall" href="javascript:void(0);" onclick="userdata();" style="float: right;"><span>USER</span></a>');
@@ -31,6 +31,27 @@ var ownedPackages = {};
 var wishlist = {};
 var success = {};
 var error = [];
+
+unsafeWindow.country = function() {
+    $('#info').empty();
+    var text = prompt( 'Enter country code:' );
+    if ( text !== null ) {
+            $.ajax( {
+                type: 'POST',
+                url: '//store.steampowered.com/account/setcountry',
+                data: {
+                    sessionid: g_sessionID,
+                    cc: text
+                },
+                success:function(result){
+                    $('#info').append('ok');
+                },
+                error:function(xhr,status,error){
+                    $('#info').append(`<tr><td>${xhr.status}:${xhr.statusText}</td></tr>`);
+                }
+            });
+    };
+};
 
 unsafeWindow.addman = function() {
     var n = Date.now();
