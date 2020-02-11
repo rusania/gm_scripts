@@ -6,7 +6,7 @@
 // @include		http*://store.steampowered.com/explore*
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/steam_queue.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/steam_queue.user.js
-// @version     2019.11.01.1
+// @version     2020.02.11.1
 // @connect     steamdb.info
 // @grant       unsafeWindow
 // @grant       GM_xmlhttpRequest
@@ -17,6 +17,8 @@
 
 GM_addStyle("table{border:solid 1px;border-collapse:collapse !important;}");
 GM_addStyle("td{border:solid 1px;border-collapse:collapse;padding-left:5px;padding-right:5px;font-size:16px !important;}");
+
+var m, id;
 
 function info(id){
     var url = `https://steamdb.info/app/${id}/subs/`;
@@ -99,40 +101,80 @@ unsafeWindow.list = function() {
     }
 }
 
-unsafeWindow.wish = function(f) {
-    $('#er').empty();
-    url = f ? '/api/addtowishlist' : '/api/removefromwishlist';
-    var m = /app\/(\d+)/.exec(document.URL);
-    if (m){
-        $.ajax({
-            url: url,
-            type: 'POST',
-            dataType : 'json',
-            data: {
-                appid: m[1],
-                sessionid: g_sessionID,
-            },
-            success: function( data, status, xhr ){
-                if (data.success){
-                    $('#er').append("true");
-                }
-                else{
-                    $('#er').append("false");
-                }
-            },
-            fail: function( data, status, xhr ){
-                $('#er').append(status);
-            }
-        });
-    }
+unsafeWindow.follow = function(id) {
+    var f = /none/.exec($('#f').css('text-decoration'));
+    var d = {
+        appid: id,
+        sessionid: g_sessionID,
+    };
+    if (!f)
+        d['unfollow'] = 1;
+    $.ajax({
+        url: '/explore/followgame',
+        type: 'POST',
+        data: d,
+        complete: function( data, status, xhr ){
+            if (/true|false/.exec(data.responseText))
+                $('#f').css('text-decoration', f ? 'line-through' : 'none');
+        }
+    });
+}
+
+unsafeWindow.ignore = function(id) {
+    var f = /none/.exec($('#g').css('text-decoration'));
+    var d = {
+        appid: id,
+        sessionid: g_sessionID,
+    };
+    if (f)
+        d['ignore_reason'] = 0;
+    else
+        d['remove'] = 1;
+    $.ajax({
+        url: '/recommended/ignorerecommendation/',
+        type: 'POST',
+        data: d,
+        success: function( data, status, xhr ){
+            $('#g').css('text-decoration', f ? 'line-through' : 'none');
+        },
+        fail: function( data, status, xhr ){
+        }
+    });
+}
+
+unsafeWindow.wish = function(id) {
+    var f = /none/.exec($('#w').css('text-decoration'));
+    var url = f ? '/api/addtowishlist' : '/api/removefromwishlist';
+    $.ajax({
+        url: url,
+        type: 'POST',
+        dataType : 'json',
+        data: {
+            appid: id,
+            sessionid: g_sessionID,
+        },
+        success: function( data, status, xhr ){
+            $('#w').css('text-decoration', f ? 'line-through' : 'none');
+        },
+        fail: function( data, status, xhr ){
+        }
+    });
 }
 
 var ap = $('.apphub_OtherSiteInfo');
 if (ap.length > 0){
-    ap.append('<a class="btnv6_blue_hoverfade btn_medium" href="javascript:void(0);" onclick="list();"><span>Info</span></a>');
+    ap.append('<a class="btnv6_blue_hoverfade btn_medium" href="javascript:void(0);" onclick="list();"><span>I</span></a>');
+    m = /\d+/.exec(location.href);
+    if (m){
+        id = m[0];
+        ap.append(`&nbsp;<a class="btnv6_blue_hoverfade btn_medium" href="javascript:void(0);" onclick="wish(${id});"><span id="w">W</span></a>`);
+        ap.append(`&nbsp;<a class="btnv6_blue_hoverfade btn_medium" href="javascript:void(0);" onclick="follow(${id});"><span id="f">F</span></a>`);
+        ap.append(`&nbsp;<a class="btnv6_blue_hoverfade btn_medium" href="javascript:void(0);" onclick="ignore(${id});"><span id="g">G</span></a>`);
+        ap.append(`&nbsp;<a class="btnv6_blue_hoverfade btn_medium" target=_blank href="//help.steampowered.com/wizard/HelpWithGame/?appid=${id}"><span>H</span></a>`);
+    }
 }
 
-var m = /back tomorrow to earn more/.exec(document.body.innerHTML);
+m = /back tomorrow to earn more/.exec(document.body.innerHTML);
 if (m){
 
 } else {
@@ -152,13 +194,15 @@ if (m){
         }
     }
 
-    m = /Site Error/.exec(document.title);
+    m = /Site Error|站点错误/.exec(document.title);
     if (m) {
         m = /\d+/.exec(location.href);
-        var url = `/app/${m[0]}`;
-        $('#error_box').append('<br><span class="error" id="er"></span>');
-        $('#error_box').after('<a id="w" class="btnv6_blue_hoverfade btn_medium" href="javascript:void(0);" onclick="wish(false);"><span>RemoveWish</span></a>');
-        $('#error_box').after('<a id="w" class="btnv6_blue_hoverfade btn_medium" href="javascript:void(0);" onclick="wish(true);"><span>Wish</span></a>');
+        id = m[0];
+        var url = `/app/${id}`;
+        $('#error_box').after(`&nbsp;<a class="btnv6_blue_hoverfade btn_medium" href="javascript:void(0);" onclick="wish(${id});"><span id="w">W</span></a>`);
+        $('#error_box').after(`&nbsp;<a class="btnv6_blue_hoverfade btn_medium" href="javascript:void(0);" onclick="follow(${id});"><span id="f">F</span></a>`);
+        $('#error_box').after(`&nbsp;<a class="btnv6_blue_hoverfade btn_medium" href="javascript:void(0);" onclick="ignore(${id});"><span id="g">G</span></a>`);
+        $('#error_box').after(`&nbsp;<a class="btnv6_blue_hoverfade btn_medium" target=_blank href="https://steamdb.info/app/${id}/"><span>D</span></a>`);
         $.ajax({
             url: url,
             type: "POST",
