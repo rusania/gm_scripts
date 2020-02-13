@@ -11,7 +11,7 @@
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/hb_download_info.user.js
 // @connect     steamdb.info
 // @grant       unsafeWindow
-// @version     2020.02.10.2
+// @version     2020.02.13.1
 // @run-at      document-end
 // @require     http://cdn.bootcss.com/jquery/3.1.0/jquery.min.js
 // @grant       GM_xmlhttpRequest
@@ -237,6 +237,9 @@ if (m){
                     $('#a1').append(`<p>${j.product_human_name}</p>`);
                     $('#a1').append(`<p>${j.hero_tile.machine_name}</p>`);
                     $('#a1').append(`<p>${j.hero_tile.tile_stamp}</p>`);
+                    $('#a1').append(`<p>${j.hero_tile.hover_highlights}</p>`);
+                    $('#a1').append(`<p>${j.hero_tile.allowed_territories}</p>`);
+                    $('#a1').append(`<p>${j.hero_tile.blocked_territories}</p>`);
                     $('#a1').append(`<p>${j.order_form.product_json.start}</p>`);
                     $('#a1').append(`<p>${j.order_form.product_json.end}</p>`);
                     var f = j.order_form.checkout_tiers;
@@ -246,21 +249,38 @@ if (m){
                         // is_fixed
                         // is_free
                         // top_header_text
-                        $('#a1').append(`<p>${e.price}</p>`);
+                        $('#a1').append(`<p>${e['price|money'].amount}&nbsp;${e['price|money'].currency}</p>`);
                     });
-                    f = j.slideout_data.display_items;
                     $('#a1').append('<table id="b"></table>');
+                    $('#a1').append('<table id="c"></table>');
+                    var r = j.hero_tile.hero_tile_grid_info;
+                    var n = [];
+                    $.each(j.bonus_data, function (o, e) {
+                        n.push(e.display_item_machine_name);
+                        $('#c').append(`<tr><td>${o}</td><td>${e.display_item_machine_name}</td><td>${e.human_name}</td><td>${e.section_identifier}</td><td>${e.type}</td></tr>`);
+                    });
                     var i = 1;
-                    for (var k in f)
-                    {
-                        var g = [];
-                        if (f[k].availability_icons){
-                            f[k].availability_icons.delivery_icons.forEach(function (v) {
-                                g.push(v.replace('hb-', ''));
-                            });
+                    $.each(j.slideout_data.display_items, function (o, e) {
+                        if ($.inArray(o, n) < 0) {
+                            var g = [];
+                            if (e.availability_icons){
+                                e.availability_icons.delivery_icons.forEach(function (v) {
+                                    g.push(v.replace('hb-', ''));
+                                });
+                            }
+                            var exc = '<td>-</td>';
+                            var dis = '<td>-</td>';
+                            if ($.inArray(o, r) > -1) {
+                                var d = r[o].allowed_territories;
+                                if (d && d.length)
+                                    exc = `<td title="${d}">List</td>`;
+                                d = r[o].blocked_territories;
+                                if (d && d.length)
+                                    dis = `<td title="${d}">List</td>`;
+                            }
+                            $('#b').append(`<tr><td>${(i++)}</td><td>${o}</td><td>${e.human_name}</td>${exc}${dis}<td>${g.join()}</td></tr>`);
                         }
-                        $('#b').append(`<tr><td>${(i++)}</td><td>${f[k].machine_name}</td><td>${f[k].human_name}</td><td>${g.join()}</td></tr>`);
-                    }
+                    });
                 }
             }
         },
