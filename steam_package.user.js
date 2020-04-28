@@ -5,30 +5,33 @@
 // @include     https://help.steampowered.com/en/wizard/HelpWithGame/*appid=*
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/steam_package.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/steam_package.user.js
-// @version     2019.08.14.1
-// @run-at      document-end
+// @version     2020.04.28.1
+// @run-at      doument-end
 // @require     http://libs.baidu.com/jquery/1.10.1/jquery.min.js
 // @grant unsafeWindow
 // ==/UserScript==
 
 var m = /appid=(\d+)/.exec(document.URL);
 var app = m[1];
-$('.help_purchase_detail_box').after('<div><a href="javascript:void(0);" onclick="addman();">ADD</a></div>');
-$('.help_purchase_detail_box').after('<div><a href="javascript:void(0);" onclick="rmman();">REMOVE</a></div>');
-$('.help_purchase_detail_box').after('<div><a href="javascript:void(0);" onclick="restoreman();">RESTORE</a></div>');
-var hp = $('#wizard_perf_data');
-if (hp.length > 0){
-    $('.help_section_medium_header').after('<div id="a"></div>');
-    $('.help_section_medium_header').after('<div id="b"></div>');
-    $('.help_wizard_button').each(function(){
-        var m = /chosenpackage=(\d+)/.exec($(this).attr('href'));
-        if (m){
-            var sub = m[1];
-            $('#a').append(`<div><a id="a${sub}" href="javascript:void(0);" onclick="remove(${sub});">RMV:[${sub}]&nbsp;${$(this).text()}</a></div>`);
-            $('#b').append(`<div><a id="b${sub}" href="javascript:void(0);" onclick="restore(${sub});">ADD:[${sub}]&nbsp;${$(this).text()}</a></div>`);
-        }
-    });
-}
+
+setTimeout(function () {
+    $('.help_purchase_detail_box').after('<div><a href="javascript:void(0);" onclick="addman();">ADD</a></div>');
+    $('.help_purchase_detail_box').after('<div><a href="javascript:void(0);" onclick="rmman();">REMOVE</a></div>');
+    $('.help_purchase_detail_box').after('<div><a href="javascript:void(0);" onclick="restoreman();">RESTORE</a></div>');
+    var hp = $('#wizard_perf_data');
+    if (hp.length > 0){
+        $('.help_section_medium_header').after('<div id="a"></div>');
+        $('.help_section_medium_header').after('<div id="b"></div>');
+        $('.help_wizard_button').each(function(){
+            var m = /chosenpackage=(\d+)/.exec($(this).attr('href'));
+            if (m){
+                var sub = m[1];
+                $('#a').append(`<div><a id="a${sub}" href="javascript:void(0);" onclick="remove(${sub});">RMV:[${sub}]&nbsp;${$(this).text()}</a></div>`);
+                $('#b').append(`<div><a id="b${sub}" href="javascript:void(0);" onclick="restore(${sub});">ADD:[${sub}]&nbsp;${$(this).text()}</a></div>`);
+            }
+        });
+    }
+}, 3000);
 
 unsafeWindow.remove = function(a){
     $.ajax({
@@ -142,12 +145,12 @@ unsafeWindow.restoreman = function() {
             url: '/en/wizard/AjaxDoPackageRestore',
             type: "POST",
             dataType : 'json',
-        data: {
-            packageid: sub,
-            appid: app,
-            sessionid: g_sessionID,
-            wizard_ajax: 1
-        },
+            data: {
+                packageid: sub,
+                appid: app,
+                sessionid: g_sessionID,
+                wizard_ajax: 1
+            },
             success: function( data, status, xhr ){
                 // {"success":false,"errorMsg":"There was an unexpected error removing this product from your account."}
                 // {"success":true,"hash":"HelpPackageRemoved?appid=15700&packageid=88110"}
