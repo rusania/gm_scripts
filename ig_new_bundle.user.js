@@ -7,7 +7,7 @@
 // @include     https://www.indiegala.com/gift-bundle*
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/ig_new_bundle.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/ig_new_bundle.user.js
-// @version     2020.05.01.1
+// @version     2020.05.08.1
 // @run-at      document-end
 // @require     http://cdn.bootcss.com/jquery/3.1.0/jquery.min.js
 // @require     http://cdn.bootcss.com/jquery/3.1.0/jquery.cookie.js
@@ -78,14 +78,12 @@ function getExtra(){
 function getGift(item, k){
     item.each(function(i, v){
         var m;
-        var img = $(this).find('img:first');
+        var img = $(this).find('a:first');
         var title = $.trim($(this).find('.profile-private-page-library-title div:first').text());
         var key = $(this).find('.profile-private-page-library-key-serial:first').val();
-        if (img.length > 0){
-            m = /(\d+).jpg/.exec(img.attr('data-src'));
-            if (m){
-                title = `<a target=_blank href="https://store.steampowered.com/app/${m[1]}/">${title}</a>`;
-            }
+        if (img){
+                img = img.attr('href').replace('p:', 'ps:');
+                title = `<a target=_blank href="${img}">${title}</a>`;
         }
         if (!key) {
             var btn = $(this).find('button.profile-private-page-library-get-serial-btn:first');

@@ -11,8 +11,8 @@
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/hb_download_info.user.js
 // @connect     steamdb.info
 // @grant       unsafeWindow
-// @version     2020.02.13.1
-// @run-at      document-end
+// @version     2020.05.13.1
+// @run-at      document-body
 // @require     http://cdn.bootcss.com/jquery/3.1.0/jquery.min.js
 // @grant       GM_xmlhttpRequest
 // @grant       GM_addStyle
@@ -20,7 +20,7 @@
 // ==/UserScript==
 
 GM_addStyle("table{border:solid 1px;border-collapse:collapse;font-size:16px !important;}");
-GM_addStyle("td{border:solid 1px;border-collapse:collapse;padding-left:5px;padding-right:5px !important;}");
+GM_addStyle("tr,td{border:solid 1px;border-collapse:collapse;padding-left:5px;padding-right:5px !important;}");
 GM_addStyle(".d{font-size:16px;color:white !important;}");
 
 var m = /country_code: "([^"]+)/.exec(document.head.innerHTML);
@@ -28,6 +28,7 @@ if (m) {
     $('.tabs-navbar-item').append('<div class="navbar-item button-title">' + m[1] + '</div>');
     $('.tabs-navbar-item').append('<a class="navbar-item not-dropdown button-title" href="javascript:void(0);" onclick="tax();">TAX</a><span class="navbar-item not-dropdown button-title" id="tax"></span>');
 }
+var d, j, n;
 
 unsafeWindow.tax = function(a){
     $('#tax').empty();
@@ -222,72 +223,96 @@ $('#region').click(function () {
     });
 });
 
-m = /games|mobile|software/.exec(document.URL);
+m = /games|mobile|books|software/.exec(document.URL);
 if (m){
-    $('.base-main-wrapper').before('<div class="d" id="a1"></div>');
-    $.ajax({
-        url: document.URL,
-        type: "GET",
-        success: function(data){
-            m = /<script id="webpack-bundle-data" type="application\/json">([^<>]+)</.exec(data);
-            if (m){
-                var j = JSON.parse(m[1]);
-                if (j && j.bundleVars) {
-                    j = j.bundleVars;
-                    $('#a1').append(`<p>${j.product_human_name}</p>`);
-                    $('#a1').append(`<p>${j.hero_tile.machine_name}</p>`);
-                    $('#a1').append(`<p>${j.hero_tile.tile_stamp}</p>`);
-                    $('#a1').append(`<p>${j.hero_tile.hover_highlights}</p>`);
-                    $('#a1').append(`<p>${j.hero_tile.allowed_territories}</p>`);
-                    $('#a1').append(`<p>${j.hero_tile.blocked_territories}</p>`);
-                    $('#a1').append(`<p>${j.order_form.product_json.start}</p>`);
-                    $('#a1').append(`<p>${j.order_form.product_json.end}</p>`);
-                    var f = j.order_form.checkout_tiers;
-                    f.forEach(function (e) {
-                        // is_bta
-                        // is_initial_tier
-                        // is_fixed
-                        // is_free
-                        // top_header_text
-                        $('#a1').append(`<p>${e['price|money'].amount}&nbsp;${e['price|money'].currency}</p>`);
+    j = $('#webpack-bundle-data');
+    if (j){
+        $('.base-main-wrapper').before('<div class="d" id="a1"></div>');
+        j = JSON.parse(j.text());
+        if (j && j.bundleVars) {
+            var r = [];
+            $.each(j.exchangeRates, function (i, e) {
+                var k = i.split('|')[0];
+                r[k] = e;
+            });
+            j = j.bundleVars;
+            $('#a1').append(`<p>${j.product_human_name}</p>`);
+            $('#a1').append(`<p>${j.hero_tile.machine_name}</p>`);
+            $('#a1').append(`<p>${j.hero_tile.tile_stamp}</p>`);
+            $('#a1').append(`<p>${j.hero_tile.hover_highlights}</p>`);
+            if (j.hero_tile.exclusive_countries)
+                $('#a1').append(`<p>Inc: ${j.hero_tile.exclusive_countries}</p>`);
+            if (j.hero_tile.disallowed_countries)
+                $('#a1').append(`<p><span style="color:red;">Exc: ${j.hero_tile.disallowed_countries}</span></p>`);
+            var d = new Date(`${new Date(j.hero_tile['start_date|datetime'])} UTC`).toLocaleString();
+            $('#a1').append(`<p>Start: ${d}</p>`);
+            d = new Date(`${new Date(j.hero_tile['end_date|datetime'])} UTC`).toLocaleString();
+            $('#a1').append(`<p>End: ${d}</p>`);
+
+            m = [];
+            $.each(j.order_form.checkout_tiers, function (i, e) {
+                m[e.identifier] = e['price|money'];
+            });
+            $('#a1').append('<table id="b"></table><br>');
+            $('#a1').append('<table id="c"></table><br>');
+            $('#a1').append('<table id="d"></table>');
+            $.each(j.hero_tile.cached_content_events, function(i, e){
+                var id = e.identifier;
+                if (m[id])
+                    $('#b').append(`<tr><th colspan="9">${id} <span style="color:green;">${m[id].currency} ${m[id].amount}</span></th></tr>`);
+                else
+                    $('#b').append(`<tr><th colspan="9">${id}</th></tr>`);
+                if (e.price){
+                    var a, b, c;
+                    $.each(e.price, function(j, f){
+                        a += `<td>${f[0]}</td>`;
+                        b += `<td>${f[1]}</td>`;
+                        var v = (f[0] / r[f[1]] * r['CNY']).toFixed(2);
+                        c += `<td>${v}</td>`;
                     });
-                    $('#a1').append('<table id="b"></table>');
-                    $('#a1').append('<table id="c"></table>');
-                    var r = j.hero_tile.hero_tile_grid_info;
-                    var n = [];
-                    $.each(j.bonus_data, function (o, e) {
-                        n.push(e.display_item_machine_name);
-                        $('#c').append(`<tr><td>${o}</td><td>${e.display_item_machine_name}</td><td>${e.human_name}</td><td>${e.section_identifier}</td><td>${e.type}</td></tr>`);
-                    });
-                    var i = 1;
-                    $.each(j.slideout_data.display_items, function (o, e) {
-                        if ($.inArray(o, n) < 0) {
-                            var g = [];
-                            if (e.availability_icons){
-                                e.availability_icons.delivery_icons.forEach(function (v) {
-                                    g.push(v.replace('hb-', ''));
-                                });
-                            }
-                            var exc = '<td>-</td>';
-                            var dis = '<td>-</td>';
-                            if ($.inArray(o, r) > -1) {
-                                var d = r[o].allowed_territories;
-                                if (d && d.length)
-                                    exc = `<td title="${d}">List</td>`;
-                                d = r[o].blocked_territories;
-                                if (d && d.length)
-                                    dis = `<td title="${d}">List</td>`;
-                            }
-                            $('#b').append(`<tr><td>${(i++)}</td><td>${o}</td><td>${e.human_name}</td>${exc}${dis}<td>${g.join()}</td></tr>`);
-                        }
-                    });
+                    $('#b').append(`<tr>${a}</tr><tr>${b}</tr>tr>${c}</tr>`);
                 }
-            }
-        },
-        error: function(data){
-            alert('error-key');
+            });
+            r = j.hero_tile.hero_tile_grid_info.displayitem_image_info;
+            n = [];
+            $.each(j.bonus_data, function (o, e) {
+                n.push(e.display_item_machine_name);
+                $('#d').append(`<tr><td>${o}</td><td>${e.human_name}<br>${e.display_item_machine_name}</td><td>${e.section_identifier}</td><td>${e.type}</td></tr>`);
+            });
+            m = [];
+            var i = 1;
+            $.each(j.slideout_data.display_items, function (o, e) {
+                if ($.inArray(o, n) < 0) {
+                    var g = [];
+                    if (e.availability_icons){
+                        e.availability_icons.delivery_icons.forEach(function (v) {
+                            g.push(v.replace('hb-', ''));
+                        });
+                    }
+                    var exc = '<td>-</td>';
+                    var dis = '<td>-</td>';
+                    if (r[o]) {
+                        var d = r[o].exclusive_countries;
+                        if (d && d.length)
+                            exc = `<td title="${d}">List</td>`;
+                        d = r[o].disallowed_countries;
+                        if (d && d.length)
+                            dis = `<td title="${d}">List</td>`;
+                    }
+                    m[o] = `<td>${e.human_name}<br>${o}</td>${exc}${dis}<td>${g.join()}</td>`;
+                }
+            });
+
+            $('.dd-game-row').each(function(){
+                var t = $(this).find('h2:first').text();
+                $('#c').append(`<tr><th colspan="6">${t}</th></tr>`);
+                $(this).find('.dd-image-box-figure').each(function(k, v){
+                    var o = $(v).attr('data-slideout');
+                    $('#c').append(`<tr><td>${i++}</td>${m[o]}</tr>`);
+                });
+            });
         }
-    });
+    }
 }
 
 m = /home\/keys/.exec(document.URL);
@@ -315,132 +340,121 @@ if (m){
 
 m = /subscription/.exec(document.URL);
 if (m){
-    $('.tabs-navbar-item').append('<a class="navbar-item not-dropdown button-title" href="javascript:void(0);" onclick="show();">INFO</a>');
-    $('.content-choices-wrapper').before('<div class="d" id="a1"></div>');
-
-    unsafeWindow.show = function(){
-        $('#a1').empty();
-        $.ajax({
-            url: document.URL,
-            type: "GET",
-            success: function(data){
-                m = /<script id="(webpack-subscriber-hub-data|webpack-monthly-product-data)" type="application\/json">([^<>]+)</.exec(data);
-                if (m){
-                    var j = JSON.parse(m[2]);
-                    if (j && j.contentChoiceOptions) {
-                        if (j.monthlyJoinDate)
-                            $('#a1').append(`<p>${j.monthlyJoinDate}</p>`);
-                        if (j.nextBilledPlanProductHumanName)
-                            $('#a1').append(`<p>${j.nextBilledPlanProductHumanName}</p>`);
-                        if(j.payEarlyOptions){
-                            $('#a1').append(`<p>${j.payEarlyOptions.activeContentStart}</p>`);
-                            $('#a1').append(`<p>${j.payEarlyOptions.productMachineName}</p>`);
+    $('.base-main-wrapper').before('<div style="background-color:#494f5c;" class="d" id="a1"></div>');
+    j = $("#webpack-subscriber-hub-data,#webpack-monthly-product-data");
+    if (j){
+        j = JSON.parse(j.text());
+        if (j && j.contentChoiceOptions) {
+            if (j.monthlyJoinDate){
+                d = new Date(`${new Date(j['subscriptionJoinDate|datetime'])} UTC`).toLocaleString();
+                $('#a1').append(`<p>${d}</p>`);
+            }
+            if (j.nextBilledPlanProductHumanName)
+                $('#a1').append(`<p>${j.nextBilledPlanProductHumanName}</p>`);
+            if(j.payEarlyOptions){
+                d = new Date(`${new Date(j.payEarlyOptions['activeContentStart|datetime'])} UTC`).toLocaleString();
+                $('#a1').append(`<p>${d}</p>`);
+                $('#a1').append(`<p>${j.payEarlyOptions.productMachineName}</p>`);
+            }
+            $('#a1').append(`<p><a target=_blank href="/subscription/${j.contentChoiceOptions.productUrlPath}">${j.contentChoiceOptions.title}</a></p>`);
+            var f = j.contentChoiceOptions.gamekey ? true : false;
+            var gamekey, made=[];
+            if (f){
+                gamekey = j.contentChoiceOptions.gamekey;
+                if (j.contentChoiceOptions.contentChoicesMade)
+                    made = j.contentChoiceOptions.contentChoicesMade.initial.choices_made;
+                $('#a1').append(`<p><a target=_blank href="/?key=${gamekey}">${gamekey}</a></p>`);
+            }
+            $('#a1').append(`<p>${j.contentChoiceOptions.contentChoiceData.initial.total_choices}</p>`);;
+            var g = j.contentChoiceOptions.contentChoiceData.initial.content_choices;
+            $('#a1').append('<table id="b"></table>');
+            $('#a1').append(`<p>Key:</p>`);
+            $('#a1').append('<table id="c"></table>');
+            n = 1;
+            $.each(j.contentChoiceOptions.contentChoiceData.initial.display_order, function (i, e) {
+                $('#b').append(`<tr id="${e}"></tr>`);
+                var claim = '';
+                if (f) {
+                    if ($.inArray(e, made)<0)
+                        claim = `<a href="javascript:void(0);" onclick="choice('${gamekey}', '${e}');">Claim</a>`;
+                    else
+                        $(`#${e}`).css("background-color", "blue");
+                }
+                $(`#${e}`).append(`<td>${(i+1)}</td><td>${g[e].title}<br>${e}</td><td>${g[e]['msrp|money'].amount}</td><td>${g[e].delivery_methods.join()}</td><td>${claim}</td>`);
+                if (g[e].tpkds){
+                    $.each(g[e].tpkds, function (k, item) {
+                        var app = '';
+                        id = item.steam_app_id;
+                        if (id)
+                            app = `<a target=_blank href="https://steamdb.info/app/${id}/">${id}</a>`;
+                        var region = item.key_type;
+                        var exc = '<td>-</td>';
+                        if (item.exclusive_countries.length){
+                            exc = `<td title="${item.exclusive_countries}">List</td>`;
+                            region += '+,';
                         }
-                        $('#a1').append(`<p><a target=_blank href="/subscription/${j.contentChoiceOptions.productUrlPath}">${j.contentChoiceOptions.title}</a></p>`);
-                        var f = j.contentChoiceOptions.gamekey ? true : false;
-                        var gamekey, made;
-                        if (f){
-                            gamekey = j.contentChoiceOptions.gamekey;
-                            made = j.contentChoiceOptions.contentChoicesMade.initial.choices_made;
-                            $('#a1').append(`<p><a target=_blank href="/?key=${gamekey}">${gamekey}</a></p>`);
+                        var dis = '<td>-</td>';
+                        if (item.disallowed_countries.length){
+                            dis = `<td title="${item.disallowed_countries}">List</td>`;
+                            region += '-,';
                         }
-                        $('#a1').append(`<p>${j.contentChoiceOptions.contentChoiceData.initial.total_choices}</p>`);;
-                        var g = j.contentChoiceOptions.contentChoiceData.initial.content_choices;
-                        $('#a1').append('<table id="b"></table>');
-                        $('#a1').append(`<p>Key:</p>`);
-                        $('#a1').append('<table id="c"></table>');
-                        var n = 1;
-                        $.each(j.contentChoiceOptions.contentChoiceData.initial.display_order, function (i, e) {
-                            $('#b').append(`<tr id="${e}"></tr>`);
-                            var claim = '';
-                            if (f) {
-                                if ($.inArray(e, made)<0)
-                                    claim = `<a href="javascript:void(0);" onclick="choice('${gamekey}', '${e}');">Claim</a>`;
-                                else
-                                    $(`#${e}`).css("background-color", "blue");
-                            }
-                            $(`#${e}`).append(`<td>${(i+1)}</td><td>${e}</td><td>${g[e].title}</td><td>${g[e]['msrp|money'].amount}</td><td>${g[e].delivery_methods.join()}</td><td>${claim}</td>`);
-                            if (g[e].tpkds){
-                                $.each(g[e].tpkds, function (k, item) {
-                                    var app = '';
-                                    id = item.steam_app_id;
-                                    if (id)
-                                        app = `<a target=_blank href="https://steamdb.info/app/${id}/">${id}</a>`;
-                                    var region = item.key_type;
-                                    var exc = '<td>-</td>';
-                                    if (item.exclusive_countries.length){
-                                        exc = `<td title="${item.exclusive_countries}">List</td>`;
-                                        region += '+,';
-                                    }
-                                    var dis = '<td>-</td>';
-                                    if (item.disallowed_countries.length){
-                                        dis = `<td title="${item.disallowed_countries}">List</td>`;
-                                        region += '-,';
-                                    }
-                                    var key = '';
-                                    var redeem = '';
-                                    if (item.redeemed_key_val)
-                                        key = item.redeemed_key_val;
-                                    else
-                                        redeem = `<a href="javascript:void(0);" onclick="redeem('${item.machine_name}', '${item.gamekey}', ${k}, '${id}');">Redeem</a>`;
-                                    $('#c').append(`<tr><td>${(n++)}</td><td>${item.machine_name}</td><td>${item.human_name}</td><td id="${id}">${key}</td><td>${app}</td>${exc}${dis}</td><td>${redeem}</td></tr>`);
-                                });
-                            }
-                        });
-                        $.each(j.contentChoiceOptions.contentChoiceData.extras, function (i, e) {
-                            $('#b').append(`<tr><td>${(i+1)}</td><td>${e.machine_name}</td><td>${e.human_name}</td><td></td><td>${e.types.join()}</td><td></td></tr>`);
-                        });
-                    }
+                        var key = '';
+                        var redeem = '';
+                        if (item.redeemed_key_val)
+                            key = item.redeemed_key_val;
+                        else
+                            redeem = `<a href="javascript:void(0);" onclick="redeem('${item.machine_name}', '${item.gamekey}', ${k}, '${id}');">Redeem</a>`;
+                        $('#c').append(`<tr><td>${(n++)}</td><td>${item.machine_name}</td><td>${item.human_name}</td><td id="${id}">${key}</td><td>${app}</td>${exc}${dis}</td><td>${redeem}</td></tr>`);
+                    });
                 }
-            },
-            error: function(data){
-                alert('error-key');
-            }
-        });
-    }
-
-    unsafeWindow.choice = function(a, b){
-        $.ajax({
-            url: `/humbler/choosecontent?gamekey=${a}&parent_identifier=initial&chosen_identifier=${b}`,
-            type: "GET",
-            dataType:'json',
-            success: function(data){
-                // {"errors": {"dummy": ["You have no choices remaining. Please refresh this page to see your choices."]}, "success": false}
-                if (data.success)
-                    $(`#${b}`).css("background-color","blue");
-                else{
-                    $(`#${b}`).attr('title', data.errors.dummy);
-                    $(`#${b}`).css("background-color","red");
-                }
-            },
-            error: function(data){
-                $(`#${b}`).css("background-color","yellow");
-            }
-        });
-    }
-
-    unsafeWindow.redeem = function(a, b, c, d){
-        $.ajax({
-            url: `/humbler/redeemkey`,
-            type: "POST",
-            data: {
-                keytype: a,
-                key: b,
-                keyindex: c
-            },
-            dataType:'json',
-            success: function(data){
-                if (data.success)
-                    $(`#${d}`).append(data.key);
-                else{
-                    $(`#${d}`).append(data.error_msg);
-                    $(`#${d}`).css("background-color","red");
-                }
-            },
-            error: function(data){
-                $(`#${d}`).append('err2');
-            }
-        });
+            });
+            $.each(j.contentChoiceOptions.contentChoiceData.extras, function (i, e) {
+                $('#b').append(`<tr><td>${(i+1)}</td><td>${e.human_name}<br>${e.machine_name}</td><td></td><td>${e.types.join()}</td><td></td><td></td></tr>`);
+            });
+        }
     }
 }
 
+unsafeWindow.choice = function(a, b){
+    $.ajax({
+        url: `/humbler/choosecontent?gamekey=${a}&parent_identifier=initial&chosen_identifiers[]=${b}`,
+        type: "GET",
+        dataType:'json',
+        success: function(data){
+            // {"errors": {"dummy": ["You have no choices remaining. Please refresh this page to see your choices."]}, "success": false}
+            if (data.success)
+                $(`#${b}`).css("background-color","blue");
+            else{
+                $(`#${b}`).attr('title', data.errors.dummy);
+                $(`#${b}`).css("background-color","red");
+            }
+        },
+        error: function(data){
+            $(`#${b}`).css("background-color","yellow");
+        }
+    });
+}
+
+unsafeWindow.redeem = function(a, b, c, d){
+    $.ajax({
+        url: `/humbler/redeemkey`,
+        type: "POST",
+        data: {
+            keytype: a,
+            key: b,
+            keyindex: c
+        },
+        dataType:'json',
+        success: function(data){
+            if (data.success)
+                $(`#${d}`).append(data.key);
+            else{
+                $(`#${d}`).append(data.error_msg);
+                $(`#${d}`).css("background-color","red");
+            }
+        },
+        error: function(data){
+            $(`#${d}`).append('err2');
+        }
+    });
+}
