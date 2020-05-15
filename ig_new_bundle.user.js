@@ -7,7 +7,7 @@
 // @include     https://www.indiegala.com/gift-bundle*
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/ig_new_bundle.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/ig_new_bundle.user.js
-// @version     2020.05.08.1
+// @version     2020.05.14.1
 // @run-at      document-end
 // @require     http://cdn.bootcss.com/jquery/3.1.0/jquery.min.js
 // @require     http://cdn.bootcss.com/jquery/3.1.0/jquery.cookie.js
@@ -57,7 +57,7 @@ if (b.length > 0){
                     p = m[1];
                 }
                 b.find('input:first').val(p);
-                b.before(`<div><input id="id" type=text size=32 value="${id}" />&emsp;<input id="p" type=text size=6 value="${p}" />&emsp;<button onclick="verify('${id}', '${p}');">Claim</button></div>`);
+                b.before(`<div><input id="id" type=text size=32 value="${id}" />&emsp;<input id="p" type=text size=6 value="${p}" />&emsp;<button onclick="verify2();">Claim</button></div>`);
                 b.before('<div id="n2"></div>');
             }
         }
@@ -82,8 +82,8 @@ function getGift(item, k){
         var title = $.trim($(this).find('.profile-private-page-library-title div:first').text());
         var key = $(this).find('.profile-private-page-library-key-serial:first').val();
         if (img){
-                img = img.attr('href').replace('p:', 'ps:');
-                title = `<a target=_blank href="${img}">${title}</a>`;
+            img = img.attr('href').replace('p:', 'ps:');
+            title = `<a target=_blank href="${img}">${title}</a>`;
         }
         if (!key) {
             var btn = $(this).find('button.profile-private-page-library-get-serial-btn:first');
@@ -99,6 +99,12 @@ function getGift(item, k){
         }
         $(`#${k}`).append(`<tr><td>${i+1}</td><td>${title}</td><td>${key}</td></tr>`);
     });
+}
+
+unsafeWindow.verify2 = function(){
+    var a = $('#id').val();
+    var b = $('#p').val();
+    verify(a, b);
 }
 
 unsafeWindow.verify = function(a, b){
