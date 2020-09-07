@@ -6,18 +6,19 @@
 // @include     https://*.gamesplanet.com/account/games?page=*
 // @updateURL   https://github.com/rusania/gm_scipts/raw/master/gp_orders.user.js
 // @downloadURL https://github.com/rusania/gm_scipts/raw/master/gp_orders.user.js
-// @version     2020.09.07.1
+// @version     2020.09.07.2
 // @run-at      document-end
 // @require     http://libs.baidu.com/jquery/1.10.1/jquery.min.js
-// @connect     steamdb.info
 // @grant unsafeWindow
 // @grant GM_xmlhttpRequest
+// @grant GM_setClipboard
 // @grant GM_getValue
 // @grant GM_setValue
 // @grant GM_addStyle
 // ==/UserScript==
 
 $('.nav-tabs').append('<li><a class="nav-link" id="k">Keys</a></li>');
+$('.nav-tabs').append('<li><a class="nav-link" id="c">Copy</a></li>');
 $('.table').before('<table id="b"></table>');
 //game('13505555-5C66A4B1DDD24-24647');
 
@@ -58,15 +59,28 @@ $('#k').click(function(){
     });
 });
 
+$('#c').click(function(){
+    var txt = '';
+    $(":checkbox").each(function(){
+        if ($(this).prop("checked")){
+            $(this).parent().nextAll().each(function(){
+                txt += $.trim($(this).text()) + '\t';
+            });
+            txt += '\n';
+        }
+    });
+    GM_setClipboard(txt);
+});
+
 function game(id){
     $.ajax( {
         type: 'GET',
         url: `/account/games/${id}`,
         success:function(result){
-            var m = /Steam[^<>:]*:\s*<span[^<>]*>([^<>]+)/.exec(result);
+            var m = /(Steam|Activation):\s*<span[^<>]*>([^<>]+)/.exec(result);
             if (m) {
                 $('#'+id).empty();
-                $('#'+id).append(m[1]);
+                $('#'+id).append(m[2]);
             }
         },
         error:function(xhr,status,error){
