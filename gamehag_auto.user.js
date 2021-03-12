@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        gamehag_auto
 // @namespace   http://tampermonkey.net/
-// @version     2018.09.4.1
+// @version     2020.09.15.1
 // @description gamehag auto
 // @author      jacky
 // @match       https://gamehag.com/giveaway/*
@@ -24,14 +24,19 @@
 
 GM_addStyle("table{border:solid 1px;border-collapse:collapse !important;}");
 GM_addStyle("td{border:solid 1px;border-collapse:collapse;padding-left:5px;padding-right:5px !important;}");
-var csrf = '';
-var m = /csrf-token" content="([0-9A-Za-z]+)"/.exec(document.head.innerHTML);
-if (m)
-    csrf = m[1];
 $('.element-list').after('<div id="a"><table id="b"></table></div>');
+
+document.querySelector("#getkey").removeAttribute("disabled");
+window.bannedCountries = ["a"];
+window.geo = "a";
+window.respCaptch = "";
+window.isSolveMediaCaptcha =false;
+window.moneytizergeo = "a"
 
 var a = [];
 var b = [];
+var csrf = $("meta[name='csrf-token']:first").attr('content');
+
 $('.single-giveaway-task').each(function(i, v){
     var d = $(v).find('a');
     var title = $(d[0]).text();
@@ -50,7 +55,7 @@ $('.single-giveaway-task').each(function(i, v){
 });
 
 if (a.length > 0){
-    $('.element-list').after('<div><a id="c">LINKS</a></div>');
+    $('.element-list').after('<div><a id="c">LINKS</a><br><a href="javascript:void(0);" onclick="getkey();">KEY</a></div>');
     $('#c').click(function(){
         $.each(a, function(i,v){
             $.ajax({
@@ -61,6 +66,34 @@ if (a.length > 0){
 
             });
         });
+    });
+}
+
+unsafeWindow.getkey = function(){
+    var code = $('#captchaCode:first').val();
+    var t = $('#BDC_VCID_GiveawayCaptcha:first').val();
+    $.ajax({
+        url: '/api/v1/giveaway/getkey',
+        type: "POST",
+        data: {
+            id: giveaway_id,
+            captchResponse: code,
+            urlCaptcha: `//gamehag.com/captcha-handler?get=image&c=GiveawayCaptcha&t=${t}`,
+            adcopyChallenge: '',
+            adcopyResponse: ''
+        },
+        headers:{'x-csrf-token': csrf},
+        dataType:'json',
+        success: function(data){
+            if (data.status == 'success'){
+                $('#c').after(`<br><a target=_blank href="https://store.steampowered.com/account/registerkey?key=${data.key}">${data.key}</a>`);
+            } else {
+                alert(data.message);
+            }
+        },
+        error:function(xhr){
+            alert(xhr.responseJSON.message);
+        }
     });
 }
 

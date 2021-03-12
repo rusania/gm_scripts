@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        dig_game_keys
 // @namespace    http://tampermonkey.net/
-// @version      2018.05.16.1
+// @version      2020.10.18.1
 // @description  dig game keys
 // @author       jacky
 // @include     http*://*dailyindiegame.com/superbundle_*
@@ -12,9 +12,13 @@
 // @run-at      document-end
 // @require     http://cdn.bootcss.com/jquery/3.1.0/jquery.min.js
 // @grant       GM_xmlhttpRequest
+// @grant       unsafeWindow
 // @grant       GM_addStyle
 // ==/UserScript==
 
+GM_addStyle(".table{border:solid 1px;border-collapse:collapse !important;}");
+GM_addStyle(".td{border:solid 1px;border-collapse:collapse;padding-left:5px;padding-right:5px;text-align:left;font-size:16px !important;}");
+//GM_addStyle("div{font-family:simsun !important;}");
 
 var m = /digstore/.exec(document.URL);
 if (m){
@@ -32,10 +36,10 @@ else {
         $('#TableKeys tbody tr').each(function(){
             m = /\s+(\d+)\s*DIG\s*trade: (.*)/.exec($(this).text());
             if (m){
-                 if ($.inArray(m[2], x) < 0){
-                     x.push(m[2]);
-                     y[m[2]] = [];
-                 }
+                if ($.inArray(m[2], x) < 0){
+                    x.push(m[2]);
+                    y[m[2]] = [];
+                }
                 y[m[2]].push(parseInt(m[1]));
             }
         });
@@ -48,80 +52,131 @@ else {
         });
     }
 
-    GM_addStyle(".zd{border:solid 1px;border-collapse:collapse;padding-left:5px;padding-right:5px;font-size:16px !important;}");
-
     $('#form2 select').append('<option value="300">Games per page: 300</option>');
     $('<div><a class="DIG2-TitleOrange" id="bundle">BUNDLE</a></div>').insertBefore('#TableKeys');
     $('#bundle').after('<div><a class="DIG2-TitleOrange" id="single">SINGLE</a></div>');
-    $('<div id="keys"></div>').insertBefore('#TableKeys');
-    $('#bundle').click(function () {
-    $('#keys').empty();
-    var ar = new Array();
-    $($('#TableKeys').children() [0]).find('tr').each(function () {
-        var t = $(this).find('td');
-        var num = $(t[0]).text();
-        var bundle = $(t[1]).text();
+    $('<table class="table" id="keys"></table>').insertBefore('#TableKeys');
+
+    $('#TableKeys:first .DIG3_14_Gray').each(function(){
+        var td = $(this).children('td');
+        var num = $(td[0]).text();
+        var bundle = $(td[1]).text();
         if (bundle==='Source')
             return;
-        var name = $(t[2]).text();
-        var key = $.trim($(t[4]).text());
+        var name = $(td[2]).text();
+        var key = $.trim($(td[4]).text());
         var id = '0';
-        var i = num % 6;
-        ar.push(key);
-        $('#keys').append('<tr><td class="zd">' + bundle + '</td><td class="zd">' + i + '</td><td class="zd">' + num + '</td><td class="zd">' + name + '</td><td class="zd">' + key + '</td><td class="zd">【' + name + '】&nbsp<span id="' + id + '">' + key + '</span></td></tr>');
-        if (i==0){
-            i = 6;
-            $('#keys').append('<tr><td class="zd">' + Math.floor(num / 6) + '</td><td class="zd">-</td><td class="zd">-</td><td class="zd">-</td><td class="zd">-</td><td class="zd">********************{r}【ASF格式】{r}{r}!redeem&nbsp;' + ar.join(',') + '</td></tr>');
-            ar = new Array();
-        }
-
+        var act = '';
+        //ar.push(key);
         if (key.search('Reveal key') > -1) {
             // http://www.dailyindiegame.com/DIG2-getkey.php?id=1149728
             // revealKey(2,1149727);
-            var match = /\d+,(\d+)/.exec($(t[4]).html());
+            var match = /\d+,(\d+)/.exec($(td[4]).html());
             if (match != null) {
                 id = match[1];
-                var url = 'http://www.dailyindiegame.com/DIG2-getkey.php?id=' + id;
-                $.ajax({
-                    url: url
-                }).done(function (data) {
-                    $('#' + id).empty();
-                    $('#' + id).append(data);
-                });
+                key = `<span id="${id}"><a href="javascript:void(0);" onclick="getKey('${id}');">GetKey</a></span>`;
             }
-        }
-    });
-});
-
-$('#single').click(function () {
-    $('#keys').empty();
-    var ar = new Array();
-    $($('#TableKeys').children() [0]).find('tr').each(function () {
-        var t = $(this).find('td');
-        var num = $(t[0]).text();
-        var bundle = $(t[1]).text();
-        if (bundle==='Source')
-            return;
-        var name = $(t[2]).text();
-        var key = $.trim($(t[4]).text());
-        ar.push(key);
-        $('#keys').append('<tr><td class="zd">' + key + '</td></tr>');
-        if (key.search('Reveal key') > -1) {
-            // http://www.dailyindiegame.com/DIG2-getkey.php?id=1149728
-            // revealKey(2,1149727);
-            var match = /\d+,(\d+)/.exec($(t[4]).html());
+        } else if (key.search('-') > -1){
+            match = /account_page_0_used_(\d+)/.exec($(td[6]).html());
             if (match != null) {
-                var id = match[1];
-                var url = 'http://www.dailyindiegame.com/DIG2-getkey.php?id=' + id;
-                $.ajax({
-                    url: url
-                }).done(function (data) {
-                    $('#' + id).empty();
-                    $('#' + id).append(data);
-                });
+                id = match[1];
+                act = `<a href="javascript:void(0);" onclick="markKey('${id}');">MarkKey</a>`;
             }
         }
+        $('#keys').append(`<tr><td class="td">${num}</td><td class="td">${bundle}</td><td class="td">${name}</td><td class="td">${key}</td><td class="td" id="u${id}">${act}</td></tr>`);
+
     });
-    $('#keys').append('<tr><td><a download="serial.csv" id="download-link" href="data:text/csv;charset=utf-8,' + ar.join("%0A") + '" target="_blank">Download</a></td></tr>');
-});
+
+
+    $('#bundle').click(function () {
+        $('#keys').empty();
+        var ar = new Array();
+        $($('#TableKeys').children() [0]).find('tr').each(function () {
+            var t = $(this).find('td');
+            var num = $(t[0]).text();
+            var bundle = $(t[1]).text();
+            if (bundle==='Source')
+                return;
+            var name = $(t[2]).text();
+            var key = $.trim($(t[4]).text());
+            var id = '0';
+            var i = num % 6;
+            ar.push(key);
+            $('#keys').append('<tr><td class="zd">' + bundle + '</td><td class="zd">' + i + '</td><td class="zd">' + num + '</td><td class="zd">' + name + '</td><td class="zd">' + key + '</td><td class="zd">【' + name + '】&nbsp<span id="' + id + '">' + key + '</span></td></tr>');
+            if (i==0){
+                i = 6;
+                $('#keys').append('<tr><td class="zd">' + Math.floor(num / 6) + '</td><td class="zd">-</td><td class="zd">-</td><td class="zd">-</td><td class="zd">-</td><td class="zd">********************{r}【ASF格式】{r}{r}!redeem&nbsp;' + ar.join(',') + '</td></tr>');
+                ar = new Array();
+            }
+
+            if (key.search('Reveal key') > -1) {
+                // http://www.dailyindiegame.com/DIG2-getkey.php?id=1149728
+                // revealKey(2,1149727);
+                var match = /\d+,(\d+)/.exec($(t[4]).html());
+                if (match != null) {
+                    id = match[1];
+                    var url = 'http://www.dailyindiegame.com/DIG2-getkey.php?id=' + id;
+                    $.ajax({
+                        url: url
+                    }).done(function (data) {
+                        $('#' + id).empty();
+                        $('#' + id).append(data);
+                    });
+                }
+            }
+        });
+    });
+
+    $('#single').click(function () {
+        $('#keys').empty();
+        var ar = new Array();
+        $($('#TableKeys').children() [0]).find('tr').each(function () {
+            var t = $(this).find('td');
+            var num = $(t[0]).text();
+            var bundle = $(t[1]).text();
+            if (bundle==='Source')
+                return;
+            var name = $(t[2]).text();
+            var key = $.trim($(t[4]).text());
+            ar.push(key);
+            $('#keys').append('<tr><td class="zd">' + key + '</td></tr>');
+            if (key.search('Reveal key') > -1) {
+                // http://www.dailyindiegame.com/DIG2-getkey.php?id=1149728
+                // revealKey(2,1149727);
+                var match = /\d+,(\d+)/.exec($(t[4]).html());
+                if (match != null) {
+                    var id = match[1];
+                    var url = 'http://www.dailyindiegame.com/DIG2-getkey.php?id=' + id;
+                    $.ajax({
+                        url: url
+                    }).done(function (data) {
+                        $('#' + id).empty();
+                        $('#' + id).append(data);
+                    });
+                }
+            }
+        });
+        $('#keys').append('<tr><td><a download="serial.csv" id="download-link" href="data:text/csv;charset=utf-8,' + ar.join("%0A") + '" target="_blank">Download</a></td></tr>');
+    });
+}
+
+unsafeWindow.getKey =function(id){
+    var k = id;
+    $.ajax({
+        url: `/DIG2-getkey.php?id=${k}`
+    }).done(function (data) {
+        $(`#${k}`).empty();
+        $(`#${k}`).append(data);
+        $(`#u${k}`).append(`<a href="javascript:void(0);" onclick="markKey('${id}');">MarkKey</a>`);
+    });
+}
+
+unsafeWindow.markKey =function(id){
+    var k = id;
+    $.ajax({
+        url: `/account_page_0_used_${k}.html`
+    }).done(function (data) {
+        $(`#u${k}`).empty();
+        $(`#u${k}`).append('<s>Mark</s>');
+    });
 }

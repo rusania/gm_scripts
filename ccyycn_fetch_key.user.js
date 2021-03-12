@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         ccyycn_fetch_key
 // @namespace    http://tampermonkey.net/
-// @version      2018.02.20.2
+// @version      2019.06.22.1
 // @description  ccyycn_fetch_key
 // @author       jacky
-// @match        http://bundle.ccyycn.com/order/id/*
-// @match        http://bundle.ccyycn.com/bundle/*
-// @match        http://bundle.ccyycn.com/*.html*
+// @match        https://www.ccyyshop.com/order/id/*
+// @match        https://www.ccyyshop.com/bundle/*
+// @match        https://www.ccyyshop.com/*.html*
 // @run-at      document-end
 // @require     http://libs.baidu.com/jquery/1.10.1/jquery.min.js
 // @grant       GM_log
@@ -30,12 +30,12 @@ if (m) {
             t = $(this).text();
         }
         else{
-            k = $(this).text();
-            $('#k').append('<tr><td>' + (i++) + '</td><td>' + t + '</td><td>'  + k +  '</td></tr>');
+            k = $(this).find('span').text();
+            $('#k').append(`<tr><td>${t}</td><td>${k}</td><td>${(i++)}</td></tr>`);
         }
     });
 }else{
-    $('.carousel.slide').before('<div style="font-family:simsun;margin-left:150px;font-size:20px;" id="b"></div>');
+    $('.carousel.slide').before('<div style="font-size:16px;" id="b"></div>');
     $('.row.games').each(function(){
         var t = $($(this).find('span')[0]).text();
         $('#b').append('<p>' + t + '</p>');

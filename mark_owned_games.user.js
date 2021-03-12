@@ -9,6 +9,7 @@
 // @include     http*://*steamcardexchange.net/index.php?badgeprices
 // @include     http*://*keylol.com/t*
 // @include     http*://*keylol.com/forum.php?mod=viewthread*
+// @include     https://www.steamgifts.com/discussion/*
 // @include     https://steamcommunity.com/sharedfiles/filedetails/?id=*
 // @include     https://store.steampowered.com/cart*
 // @include     https://www.fanatical.com/en/game/*
@@ -16,13 +17,14 @@
 // @include     https://www.fanatical.com/en/pick-and-mix/*
 // @include     https://www.indiegala.com/gift?gift_id=*
 // @include     http://wtfprice.ru*
+// @include     https://key.lol/*
 // @include     http://198.181.32.5/*
 // @include     http://176.122.178.89/*
 // @include     http://45.78.74.83/*
 // @include     https://www.youshangames.com/wholesale-center.html*
 // @include     http://bundle.ccyycn.com/*
 // @include     https://www.steamgifts.com/discussion/Infm8/*
-// @version     2020.01.13.1
+// @version     2020.09.22.1
 // @run-at      document-end
 // @connect     store.steampowered.com
 // @connect     steamcardexchange.net

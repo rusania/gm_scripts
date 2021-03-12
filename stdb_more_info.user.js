@@ -9,7 +9,7 @@
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/stdb_more_info.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/stdb_more_info.user.js
 // @require     http://libs.baidu.com/jquery/1.10.1/jquery.min.js
-// @version     2019.11.18.1
+// @version     2020.10.09.1
 // @connect     store.steampowered.com
 // @grant       unsafeWindow
 // @grant       GM_xmlhttpRequest
@@ -25,14 +25,20 @@ var rgOwnedApps = GM_getValue("rgOwnedApps", "[]");
 var host = '176.122.178.89';
 
 var m = /(sub|app)\/(\d+)/.exec(document.URL);
-var p = $('.package');
+var p = $('#subs div table tbody .package');
+$('#subs div table tbody tr:not(.package)').each(function(){
+    var id = $(this).find('a').text().trim();
+    $(this).append(`<td><input class="bi" type="checkbox" value="${id}">bundle/${id}</td>`);
+});
+
 if (p.length > 0){
-    $('.app-links').append('<a id="cmp">Cmp</a>');
+    //$('.app-links').append('<a id="cmp">Cmp</a>');
+    $('.app-links').append('<a id="cmp" href="javascript:void(0);" onclick="cmp();">Cmp</a>');
     $('.app-links').append(`<a id="pkg" target="_target" href="http://${host}/package.php?id=${m[2]}">Pkg</a>`);
     $('.app-links').append(`<a id="help" target="_target" href="https://help.steampowered.com/en/wizard/HelpWithGame/?appid=${m[2]}">Help</a>`);
     p.each(function(){
         var id = $(this).attr('data-subid');
-        $(this).append('<td><input type="checkbox" value="' + id + '">sub/' + id + '</td>');
+        $(this).append(`<td><input class="si" type="checkbox" value="${id}">sub/${id}</td>`);
     });
 
     $('.tab-content').append('<div id="l"></div>');
@@ -46,19 +52,37 @@ $('.app').each(function(){
     $(this).append('<td>app/' + id + '</td>');
 });
 
-
 $('#cmp').click(function(){
-    var a = [];
-    $(":checkbox").each(function(){
+    var a=[], b=[];
+    $(".bi").each(function(){
         if ($(this).prop("checked"))
             a.push($(this).val());
     });
-    if (a.length > 0){
-        comp(a);
+    $(".si").each(function(){
+        if ($(this).prop("checked"))
+            b.push($(this).val());
+    });
+    if (a.length > 0 || b.length > 0 ){
+        comp(a, b);
     }
 });
 
-unsafeWindow.comp = function(a) {
+unsafeWindow.cmp = function() {
+    var a=[], b=[];
+    $(".bi").each(function(){
+        if ($(this).prop("checked"))
+            a.push($(this).val());
+    });
+    $(".si").each(function(){
+        if ($(this).prop("checked"))
+            b.push($(this).val());
+    });
+    if (a.length > 0 || b.length > 0 ){
+        comp(a, b);
+    }
+}
+
+function comp(a, b) {
     $('#b').empty();
     $('#g').empty();
     $('#p').empty();
@@ -71,7 +95,7 @@ unsafeWindow.comp = function(a) {
     $('#g').append('<tr id="h"><td>Id</td><td>Name</td><td>Update</td></tr>');
     $('#p').append('<tr><td>Id</td><td>Name</td><td>Price</td><td>Low</td><td>Cut</td><td>Time</td></tr>');
 
-    $.each(a, function(i, v){
+    $.each(b, function(i, v){
         var c = v;
         f.push(c);
         $('#c').append(`<td>${c}</td>`);
@@ -81,7 +105,8 @@ unsafeWindow.comp = function(a) {
             type: 'GET',
             async: false,
         }).done(function (data) {
-            var h = $(data).find('.css-truncate')[0];
+            //var h = $(data).find('.css-truncate')[0];
+            var h = $(data).find('h1')[0];
             $(h).children().first().remove();
             var t = $.trim($(h).text());
 
@@ -90,7 +115,8 @@ unsafeWindow.comp = function(a) {
             if (p.length > 0){
                 np = $(p[0]).next('td').text();
             }
-            var l = sublow(c, 'sub');
+            var l = {'l':-1,'c':0,'n':[]};
+            //l = sublow(c, 'sub');
             var n = '';
             $.each(l.n, function(j, item){
                 n += '<div>' + tm(item) + '</div>';
@@ -145,6 +171,59 @@ unsafeWindow.comp = function(a) {
                     var time = $(td[2]).text();
                     var sub = '';
                     g[id] = {'name':name,'time':time,'sub':[c]};
+                }
+            });
+
+        }).fail(function (xhr) {
+        });
+    });
+
+    $.each(a, function(i, v){
+        var c = v;
+        f.push(c);
+        $('#c').append(`<td>${c}</td>`);
+        $('#h').append(`<td>${c}</td>`);
+        $.ajax({
+            url: `/bundle/${c}/`,
+            type: 'GET',
+            async: false,
+        }).done(function (data) {
+            //var h = $(data).find('.css-truncate')[0];
+            var h = $(data).find('h1')[0];
+            $(h).children().first().remove();
+            var t = $.trim($(h).text());
+
+            var l = 0;
+            var np = 0;
+            $(data).find('.price-initial').each(function(){
+                var m = /[0-9.]+/.exec($(this).text());
+                if (m)
+                    l += parseFloat(m[0]);
+                var n = $(this).parent().attr('data-sort');
+                np += Math.round(n / 100);
+            });
+            var x = Math.round((1 - (np / l)) * 100);
+            var n = $(data).find('.panel-error div').text();
+            var p = $('<tr></tr>');
+            p.append(`<td>${c}</td><td><a target=_blank href="/bundle/${c}/">${t}</a></td><td>${np}</td><td></td><td>-${x}%</td><td>${n}</td>`);
+            $('#p').append(p);
+
+            var apps = $(data).find('.app');
+            $.each(apps, function(j,item){
+                var td = $(item).children('td');
+                var id = $(td[0]).text();
+                var mark = $(item).attr('class');
+                if (d.hasOwnProperty(id)){
+                    d[id]['sub'].push(c);
+                }
+                else {
+                    var tp = $.trim($(td[1]).text());
+                    var name = $.trim($(td[2]).text()).replace('(', '<br>(');
+                    var store = $(td[2]).children('a').length > 0 ? `<a class="pull-right" target=_blank href="https://store.steampowered.com/app/${id}/"><span class="octicon octicon-globe"></span></a>` : '';
+                    var price = '';
+                    var time = $(td[3]).text();
+                    var sub = '';
+                    d[id] = {'mark':mark,'type':tp,'name':name,'store':store,'price':price,'time':time,'sub':[c]};
                 }
             });
 
@@ -210,8 +289,9 @@ unsafeWindow.sublow = function(id, tp) {
         var id = `#${id}`;
         if (data.success){
             var a = {};
-            if (data.data.final.length > 0){
-                $.each(data.data.final, function(i, v){
+            var b = [];
+            if (data.data.history.length > 0){
+                $.each(data.data.history, function(i, v){
                     if (a.hasOwnProperty(v[1])){
                         a[v[1]].push(v[0]);
                     } else {

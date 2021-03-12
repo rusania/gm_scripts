@@ -7,7 +7,7 @@
 // @include     https://www.fanatical.com/en/pick-and-mix/*
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/bs_games_info.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/bs_games_info.user.js
-// @version     2019.10.23.1
+// @version     2020.09.19.1
 // @run-at      document-end
 // @connect     free.currencyconverterapi.com
 // @require     http://cdn.bootcss.com/jquery/3.1.0/jquery.min.js
@@ -26,7 +26,7 @@ GM_addStyle("table{border:solid 1px;border-collapse:collapse;font-size:16px !imp
 GM_addStyle("td{border:solid 1px;border-collapse:collapse;padding-left:5px;padding-right:5px !important;}");
 GM_addStyle(".d{font-size:16px;color:white !important;}");
 
-$('#root').before('<li><a <a href="javascript:void(0);" onclick="api();"><span style="color:green;font-weight:bold;">API</span></a></li>');
+$('body').append('<li><a href="javascript:void(0);" onclick="api();"><span style="color:green;font-weight:bold;">API</span></a></li>');
 
 unsafeWindow.api = function(){
     var m = /game\/([^\/]+)/.exec(document.URL);
