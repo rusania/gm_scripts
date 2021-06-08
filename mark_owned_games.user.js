@@ -15,7 +15,9 @@
 // @include     https://www.fanatical.com/en/game/*
 // @include     https://www.fanatical.com/en/bundle/*
 // @include     https://www.fanatical.com/en/pick-and-mix/*
+// @include     https://www.indiegala.com/library
 // @include     https://www.indiegala.com/gift?gift_id=*
+// @include     https://www.indiegala.com/gift-bundle/*
 // @include     http://wtfprice.ru*
 // @include     https://key.lol/*
 // @include     http://198.181.32.5/*
@@ -24,7 +26,7 @@
 // @include     https://www.youshangames.com/wholesale-center.html*
 // @include     http://bundle.ccyycn.com/*
 // @include     https://www.steamgifts.com/discussion/Infm8/*
-// @version     2020.09.22.1
+// @version     2021.04.28.1
 // @run-at      document-end
 // @connect     store.steampowered.com
 // @connect     steamcardexchange.net

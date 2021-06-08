@@ -5,17 +5,18 @@
 // @include     http*://store.steampowered.com/sale/*
 // @include     http*://directg.net/event/event.html
 // @include     http*://directg.net/game/game_page.html?product_code=*
-// @include     http*://www.indiegala.com/*
+// @include     http*://www.indiegala.com/bundle/*
 // @exclude     http*://www.indiegala.com/profile?user_id=*
 // @exclude     http*://www.indiegala.com/ajaxsale?sale_id=*
 // @exclude     http*://www.indiegala.com/gift?gift_id=*
 // @exclude     http*://www.indiegala.com/successpay*
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/bundle_info.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/bundle_info.user.js
-// @version     2021.02.24
+// @version     2021.05.10.1
 // @run-at      document-end
 // @connect     free.currencyconverterapi.com
 // @require     http://cdn.bootcss.com/jquery/3.1.0/jquery.min.js
+// @require     https://gist.githubusercontent.com/w35l3y/1f05501abf7955eefbc1/raw/e973eca3e6cbd4ef6f510e9419c7c0ad1b9c9495/html2canvas.js
 // @grant       unsafeWindow
 // @grant       GM_xmlhttpRequest
 // @grant       GM_addStyle
@@ -156,10 +157,29 @@ if (match) {
 
 match = /indiegala.com/.exec(document.URL);
 if (match) {
-    $('.bundle-main-menu ul:first-child').append('<li class="main-menu-link"><a id="btn" class="main-menu-link-big" href="javascript:void(0);" onclick="ig();"><span style="color:#00ff00;">INFO</span></a></li>');
+    $('#main-menu-services ul:first').append('<li><a href="javascript:void(0);" onclick="ig();">INFO</a></li>');
+    $('#main-menu-services ul:first').append('<li><a href="javascript:void(0);" onclick="fm();">IMGA</a></li>');
     $('.bundle-page').before('<div class="info" style="color:#ffffff;background-color:#a0a0a0;"></div>');
     $('.bundle-page').before('<div class="info2" style="color:#ffffff;background-color:#a0a0a0;"></div>');
 } //indiegala bundle
+
+unsafeWindow.fm =function() {
+    $('.bundle-page-tier-text').addClass('align-c').append($('.bundle-page-logo img:first'));
+    $('.bundle-main-container:first').css('background-color', '#a0a0a0');
+    $('.bundle-page-tier').each(function () {
+        var v = $(this).find('.bundle-page-tier-item-col');
+        if (v.length % 3 == 1) {
+            var l = $(v[v.length -1]);
+            l.parent().append('<div id="z"></div>');
+            $('#z').append(l.clone());
+            l.empty();
+        }
+    });
+    var h = html2canvas($(".bundle-page-tier:first"),{useCORS:true,logging:true});
+    h.onrendered(canvas => {
+        document.body.appendChild(canvas);
+    });
+}
 
 unsafeWindow.ig = function() {
     $('.info').empty();
@@ -170,11 +190,13 @@ unsafeWindow.ig = function() {
     var html = $('#frame-top').html();
     var g = $('.bundle-page-24-row');
     if (g.length > 0) {
-        $('#early').append('<span style="color:#ff0000;">特价</span>');
+        $('#early').append('<span style="color:#b200ff;">特价！</span>');
     }
     g = $('.bundle-page-hh-row');
+    var h = 1;
     if (g.length > 0){
-        $('#early').append('<span style="color:#ffff00;">欢乐时光</span>');
+        h = 4;
+        $('#early').append('<span style="color:#b200ff;">欢乐时光！</span>');
     }
     var stamp =Date.parse(new Date());
     g = $('.bundle-page-countdown-days:first').text();
@@ -202,29 +224,36 @@ unsafeWindow.ig = function() {
         }
         $(this).find('.bundle-page-tier-item-col').each(function () {
             var title = $(this).find('.bundle-page-tier-item-title:first').text();
-            var hr = $(this).find('.img-fit:first').attr('src');
-            match = /(\d+).(png|jpg)/.exec(hr);
-            if (match){
-                getGridContent(match[1], 'app', title, '#' + i, ++k);
+            var h = $(this).find('.fa-steam-square:first');
+            if (h.length > 0) {
+                h = $(this).find('.bundle-page-tier-item-trading');
+                var f = true;
+                if (/No/.exec(h.text()))
+                    f = false;
+                h = $(this).find('.img-fit:first').attr('src');
+                match = /(\d+).(png|jpg)/.exec(h);
+                if (match){
+                    getGridContent(match[1], 'app', title, f, `#${i}`, ++k);
+                }
+            } else {
+                ++k;
+                $(`#${i}`).append(`<div><b>${title}</b></div>`);
             }
-
         });
     });
     $('.g').append(k);
-    // "Just one giftx2 paying more than: $ 8.55x3 paying more than: $ 12.16x4 paying more than: $ 15.35x5 paying more than: $ 18.53"
-    // $(':radio').parent().text();
-    var j = 1;
-    if ($('.happy-hour-link-cont').length > 0)
-        j = 4;
-    $('.info').append('<div><span style="color:#fdd915;">[color=#fdd915]欢乐时光期间选择礼物方式买一送三[/color]</span></div>');
-    var bg = $("input[name='bundles-gift']");
+    var bg = $("input[name='bundles-gift']").parent();
     if (bg.length > 0){
-        bg.each(function (i, t) {
-            var v = $(t).val();
-            var co = colors[i];
-            var num = (i+1) * j;
-            var pa =(v / num).toFixed(2);
-            $('.info').append(`<div><span style="color:${co};">[color=${co}]支付超过\$${v}获得' + (i + 1) * j + '份完整包（每份\$${pa}）[/color]</span></div>`);
+        $('.info').append('<div><span style="color:#fdd915;">[color=#fdd915]欢乐时光期间选择礼物方式买一送三[/color]</span></div>');
+        var j = 0;
+        bg.each(function () {
+            var m = /x(\d+) paying more than: \$ ([0-9.]+)/.exec($(this).text());
+            if (m){
+                var n = m[1] * h;
+                var p =(m[2] / n).toFixed(2);
+                $('.info').append(`<div><span style="color:${colors[j]};">[color=${colors[j]}]支付超过\$${m[2]}获得${n}份完整包（每份\$${p}）[/color]</span></div>`);
+                j++;
+            }
         });
     }
 
@@ -263,9 +292,10 @@ var getGridHead = function (title) {
     $('.info').append(`<div><span id="time"></span>${title}上线，<span id="p"></span>可获完整内容<br><span id="early"></span><br>[b]购买地址：<br>${document.URL}<br><br>包含<span class="g"></span>款游戏：[/b]</div>`);
     $('.info2').append(`<div>&lt;FONT size=2 face=黑体&gt;&lt;P&gt;${title}&amp;nbsp;慈善包&lt;/P&gt;&lt;P&gt;&lt;FONT color=#ff0000&gt;发货方式为激活码&lt;/FONT&gt;&lt;/P&gt;&lt;P&gt;包含<span class="g"></span>款STEAM游戏：&lt;/P&gt;&lt;P&gt;<span class="tb"></span>&lt;/P&gt;&lt;P&gt;&lt;/P&gt;&lt;/FONT&gt;</div>`);
 }; // grid head
-var getGridContent = function (id, addon, name, tier, i) {
+var getGridContent = function (id, addon, name, f, tier, i) {
+    f = f ? '有卡': '无卡';
     $(tier).append(`<div id=${id}>[url=https://store.steampowered.com/${addon}/${id}/]<a target=_blank href="https://store.steampowered.com/${addon}/${id}/"><b>${name}</b></a>[/url]</div>`);
-    $('.tb').append(`<div id=tb_${id}>${i}.&amp;nbsp;<b>${name}</b></div>`);
+    $('.tb').append(`<div id=tb_${id}>${i}.&amp;nbsp;<b>${name}</b>&amp;nbsp;${f}</div>`);
     $('.tb').append(`<div>&lt;BR&gt;&lt;FONT color=#0055ff&gt;&amp;nbsp;&amp;nbsp;http://store.steampowered.com/${addon}/${id}/&lt;/FONT&gt;&lt;BR&gt;</div>`);
     //getGameName(id, addon);
     //getGameRate(id, addon);

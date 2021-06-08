@@ -15,7 +15,7 @@ GM_addStyle("table{border:solid 1px;border-collapse:collapse !important;}");
 GM_addStyle("td{border:solid 1px;border-collapse:collapse;padding-left:5px;padding-right:5px;font-size:14px !important;}");
 $('#myMarketTabs').before('<a href="javascript:void(0);" onclick="list2();">List</a>');
 $('#myMarketTabs').before('&emsp;<a href="javascript:void(0);" onclick="list(100, 7885115950, 1150080);">Azur Lane: Crosswave</a>');
-$('#myMarketTabs').before('&emsp;<a href="javascript:void(0);" onclick="list(100, 7100821814, 1144400);">Senrenï¼ŠBanka</a>');
+$('#myMarketTabs').before('&emsp;<a href="javascript:void(0);" onclick="list(100, 7100821814, 1144400);">Senren£ªBanka</a>');
 $('#myMarketTabs').before('&emsp;<a href="javascript:void(0);" onclick="list(100, 3641673529, 1146630);">Yokai&#39;s Secret</a>');
 $('#myMarketTabs').before('&emsp;<a href="javascript:void(0);" onclick="chkall();">Check All</a>');
 $('#myMarketTabs').before('&emsp;<a href="javascript:void(0);" onclick="sellall();">Sell All</a>');

@@ -5,7 +5,7 @@
 // @include     https://help.steampowered.com/en/wizard/HelpWithGame/*appid=*
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/steam_package.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/steam_package.user.js
-// @version     2020.05.12.1
+// @version     2021.03.26.1
 // @run-at      doument-end
 // @require     http://libs.baidu.com/jquery/1.10.1/jquery.min.js
 // @connect     store.steampowered.com

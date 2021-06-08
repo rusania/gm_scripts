@@ -11,7 +11,7 @@
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/hb_download_info.user.js
 // @connect     steamdb.info
 // @grant       unsafeWindow
-// @version     2020.05.13.1
+// @version     2021.04.07.1
 // @run-at      document-body
 // @require     http://cdn.bootcss.com/jquery/3.1.0/jquery.min.js
 // @grant       GM_xmlhttpRequest
@@ -416,6 +416,13 @@ if (m){
 }
 
 unsafeWindow.choice = function(a, b){
+    /*
+    https://www.humblebundle.com/api/v1/analytics/content-choice/content-tile/click/march_2021_choice/control
+    POST
+    https://www.humblebundle.com/humbler/choosecontent
+    POST  gamekey=BRHPBYPurSBeEhfP&parent_identifier=initial&chosen_identifiers%5B%5D=control
+    POST  gamekey=BRHPBYPurSBeEhfP&parent_identifier=control&chosen_identifiers%5B%5D=control_steam
+    */
     $.ajax({
         url: `/humbler/choosecontent?gamekey=${a}&parent_identifier=initial&chosen_identifiers[]=${b}`,
         type: "GET",

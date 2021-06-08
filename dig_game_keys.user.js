@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        dig_game_keys
 // @namespace    http://tampermonkey.net/
-// @version      2020.10.18.1
+// @version      2021.06.08.1
 // @description  dig game keys
 // @author       jacky
 // @include     http*://*dailyindiegame.com/superbundle_*
@@ -28,6 +28,7 @@ if (m){
     });
 }
 else {
+    /*
     m = /transactionhistory/.exec(document.URL);
     if (m){
         $('<div id="po"></div>').insertBefore('#TableKeys');
@@ -51,18 +52,32 @@ else {
             $('#po').append(`<p>${v}&#9;${p}</p>`);
         });
     }
+    */
 
     $('#form2 select').append('<option value="300">Games per page: 300</option>');
     $('<div><a class="DIG2-TitleOrange" id="bundle">BUNDLE</a></div>').insertBefore('#TableKeys');
     $('#bundle').after('<div><a class="DIG2-TitleOrange" id="single">SINGLE</a></div>');
+    $('<div id="week"></div>').insertBefore('#TableKeys');
     $('<table class="table" id="keys"></table>').insertBefore('#TableKeys');
 
+    var r = {};
     $('#TableKeys:first .DIG3_14_Gray').each(function(){
         var td = $(this).children('td');
         var num = $(td[0]).text();
         var bundle = $(td[1]).text();
         if (bundle==='Source')
             return;
+
+        var b = '.';
+        m = /Weekly Bundle (\d+)/.exec(bundle);
+        if (m) {
+            b = `_${m[1]}`;
+            bundle = `<a target=_blank href="/site_weeklybundle${b}.html">${bundle}</a>`;
+            if (!r[b]) {
+                r[b]=[];
+            }
+        }
+
         var name = $(td[2]).text();
         var key = $.trim($(td[4]).text());
         var id = '0';
@@ -83,10 +98,21 @@ else {
                 act = `<a href="javascript:void(0);" onclick="markKey('${id}');">MarkKey</a>`;
             }
         }
-        $('#keys').append(`<tr><td class="td">${num}</td><td class="td">${bundle}</td><td class="td">${name}</td><td class="td">${key}</td><td class="td" id="u${id}">${act}</td></tr>`);
-
+        var c = r[b].length + 1;
+        var k = `<tr class="${b}"><td class="td">${num}</td><td class="td">${c}</td><td class="td">${bundle}</td><td class="td">${name}</td><td class="td">${key}</td><td class="td" id="u${id}">${act}</td></tr>`;
+        r[b].push(k);
     });
-
+    var t = 0;
+    $.each(r, function(i,v){
+        var n = i;
+        var w = v;
+        $.each(w, function(j, k){
+            $(`#keys`).append(k);
+        });
+        if (t++ %2 == 1)
+            $(`.${n}`).css('background-color', '#4169E1');
+        $('#single').after(`<div><a href="javascript:void(0);" onclick="getb('${n}');">${n}</a></div>`);
+    });
 
     $('#bundle').click(function () {
         $('#keys').empty();
@@ -157,6 +183,23 @@ else {
             }
         });
         $('#keys').append('<tr><td><a download="serial.csv" id="download-link" href="data:text/csv;charset=utf-8,' + ar.join("%0A") + '" target="_blank">Download</a></td></tr>');
+    });
+}
+
+unsafeWindow.getb =function(id){
+    $('#week').empty();
+    var k = id;
+    $.ajax({
+        url: `/site_weeklybundle${k}.html`
+    }).done(function (data) {
+        var d = $(data).find("a[href*='/app/']");
+        d.each(function(){
+            var h = $(this).attr('href');
+            var t = $.trim($(this).parent().prop("firstChild").nodeValue);
+            $(`.${k} td:contains('${t}')`).each(function(){
+                $(this).replaceWith(`<td class="td"><a href="${h}">${t}</a></td>`);
+            });
+        });
     });
 }
 
