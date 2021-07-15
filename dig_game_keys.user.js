@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        dig_game_keys
 // @namespace    http://tampermonkey.net/
-// @version      2021.06.08.1
+// @version      2021.07.11.1
 // @description  dig game keys
 // @author       jacky
 // @include     http*://*dailyindiegame.com/superbundle_*
@@ -78,7 +78,7 @@ else {
             }
         }
 
-        var name = $(td[2]).text();
+        var name = $.trim($(td[2]).text());
         var key = $.trim($(td[4]).text());
         var id = '0';
         var act = '';
@@ -197,7 +197,8 @@ unsafeWindow.getb =function(id){
             var h = $(this).attr('href');
             var t = $.trim($(this).parent().prop("firstChild").nodeValue);
             $(`.${k} td:contains('${t}')`).each(function(){
-                $(this).replaceWith(`<td class="td"><a href="${h}">${t}</a></td>`);
+                if ($(this).text() == t)
+                    $(this).replaceWith(`<td class="td"><a href="${h}">${t}</a></td>`);
             });
         });
     });

@@ -4,7 +4,7 @@
 // @include     http*://store.steampowered.com/cart*
 // @updateURL 	https://github.com/rusania/gm_scipts/raw/master/bl2_dlc_add_to_cart.user.js
 // @downloadURL https://github.com/rusania/gm_scipts/raw/master/bl2_dlc_add_to_cart.user.js
-// @version     2020.01.13.1
+// @version     2021.07.05.1
 // @run-at      document-end
 // @require     http://libs.baidu.com/jquery/1.10.1/jquery.min.js
 // @connect     steamdb.info
@@ -20,9 +20,12 @@ GM_addStyle("td{border:solid 1px;border-collapse:collapse;padding-left:5px;paddi
 
 var match = /sessionid=([a-z0-9]+);/.exec(document.cookie);
 var sid = match[1];
+match = /profiles\/(\d+)/.exec(document.body.innerHTML);
+var id = match[1];
 $('.supernav_container').append('<a class="menuitem supernav" href="/cart/" data-tooltip-type="selector" data-tooltip-content=".submenu_myli">快速</a>');
 $('.supernav_container').append('<div class="submenu_myli" style="display: none;"><div>');
 $('.supernav_container').append('<a class="menuitem" href="javascript:void(0);" onclick="dlc();">DLC</a>');
+$('.supernav_container').append('<a class="menuitem" href="javascript:void(0);" onclick="wish();">Wish</a>');
 
 $('.submenu_myli').append('<a class="submenuitem myli" href="javascript:void(0);" onclick="addme(\'36555,36556,35221,34972,33298,31174\', 49520);">无主2</a>');
 $('.submenu_myli').append('<a class="submenuitem myli" href="javascript:void(0);" onclick="addme(\'15373\', 206440);">去月球</a>');
@@ -71,6 +74,36 @@ unsafeWindow.dlc = function() {
             alert('fail');
         }
     });
+}
+
+unsafeWindow.wish = function() {
+    var i = 0;
+    var j = 0;
+    do {
+        i=0;
+        var url = `https://store.steampowered.com/wishlist/profiles/${id}/wishlistdata/?p=${j++}`;
+        $.ajax({
+            url: url,
+            method: 'GET',
+            async: false,
+            success: function (d) {
+                $.each(d, function(k,v){
+                    i++;
+                    var t = `<a href="/app/${k}/">${v.name}</a><br>${v.review_score} | ${v.review_desc} | ${v.reviews_total} | ${v.reviews_percent}`;
+                    var s = '';
+                    var u = '';
+                    $.each(v.subs, function(w, y){
+                        u += `<p><a href="/sub/${y.id}/">${y.price}(-${y.discount_pct})</a></p>`
+                    });
+                    $('#b').append(`<tr><td>${t}</td><td>${s}</td><td>${u}</td></tr>`);
+                });
+            },
+            error: function () {
+            }
+        });
+    }
+    while (i > 0);
+
 }
 
 unsafeWindow.list = function(app, name) {
