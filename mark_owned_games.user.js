@@ -20,13 +20,11 @@
 // @include     https://www.indiegala.com/gift-bundle/*
 // @include     http://wtfprice.ru*
 // @include     https://key.lol/*
-// @include     http://198.181.32.5/*
 // @include     http://176.122.178.89/*
-// @include     http://45.78.74.83/*
 // @include     https://www.youshangames.com/wholesale-center.html*
 // @include     http://bundle.ccyycn.com/*
 // @include     https://www.steamgifts.com/discussion/Infm8/*
-// @version     2021.04.28.1
+// @version     2021.11.11.1
 // @run-at      document-end
 // @connect     store.steampowered.com
 // @connect     steamcardexchange.net
@@ -209,6 +207,7 @@ function mark(a){
                     card = ` <span class="ruc" style="color: ${cardColor}; cursor: help;">${cardIcon}</span>`;
                     $(this).after(card);
                 }
+                $(this).after(` <a class="db" target=_blank href="https://barter.vg/steam/${m[1]}/${id}/" target=_blank><img src="https://bartervg.com/imgs/ico/barter/favicon-16x16.png" /></a>`);
             }
             else {
                 if ($.inArray(id, ownedPackages) > -1){
@@ -221,9 +220,9 @@ function mark(a){
                 }
             }
             html = ` <span class="ruc" style="color: ${color}; cursor: help;">${icon}</span>`;
-            var ma = /steamdb.info/.exec(h);
+            var ma = /steamdb.info|barter.vg/.exec(h);
             if (!ma)
-                $(this).after(` <a class="dbc" target=_blank href="https://steamdb.info/${m[0]}/" target=_blank>${dbIcon}</a>`);
+                $(this).after(` <a class="dbc" target=_blank href="https://steamdb.info/${m[1]}/${id}/" target=_blank><img src="https://steamdb.info/static/logos/16px.png" /></a>`);
             $(this).after(html);
         }
     });
@@ -257,6 +256,7 @@ function mark2(a){
                     card = ` <span class="ruc" style="color: ${cardColor}; cursor: help;">${cardIcon}</span>`;
                     $(this).after(card);
                 }
+                $(this).after(` <a class="db" target=_blank href="https://barter.vg/steam/${tp}/${id}/" target=_blank><img src="https://bartervg.com/imgs/ico/barter/favicon-16x16.png" /></a>`);
             }
             else {
                 if ($.inArray(id, ownedPackages) > -1){
@@ -270,9 +270,9 @@ function mark2(a){
                 }
             }
             html = ` <span class="ruc" style="color: ${color}; cursor: help;">${icon}</span>`;
-            var ma = /steamdb.info/.exec(h);
+            var ma = /steamdb.info|barter.vg/.exec(h);
             if (!ma)
-                $(this).after(` <a class="dbc" target=_blank href="https://steamdb.info/${tp}/${id}/" target=_blank>${dbIcon}</a>`);
+                $(this).after(` <a class="dbc" target=_blank href="https://steamdb.info/${tp}/${id}/" target=_blank><img src="https://steamdb.info/static/logos/16px.png" /></a>`);
             $(this).after(html);
         }
     });
@@ -307,9 +307,11 @@ function mark3(a){
             }
 
             html = ` <span class="ruc" style="color: ${color}; cursor: help;">${icon}</span>`;
-            var ma = /steamdb.info/.exec(h);
-            if (!ma)
-                $(this).after(` <a class="dbc" target=_blank href="https://steamdb.info/app/${m[1]}/" target=_blank>${dbIcon}</a>`);
+            var ma = /steamdb.info|barter.vg/.exec(h);
+            if (!ma){
+                $(this).after(` <a class="dbc" target=_blank href="https://barter.vg/steam/app/${id}/" target=_blank><img src="https://bartervg.com/imgs/ico/barter/favicon-16x16.png" /></a>`);
+                $(this).after(` <a class="dbc" target=_blank href="https://steamdb.info/app/${id}/" target=_blank><img src="https://steamdb.info/static/logos/16px.png" /></a>`);
+            }
             $(this).after(html);
         }
     });

@@ -10,7 +10,7 @@
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/stdb_more_info.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/stdb_more_info.user.js
 // @require     http://libs.baidu.com/jquery/1.10.1/jquery.min.js
-// @version     2021.07.10.1
+// @version     2021.11.25.1
 // @connect     store.steampowered.com
 // @grant       unsafeWindow
 // @grant       GM_xmlhttpRequest
@@ -25,16 +25,11 @@ const userRefreshInterval = 60 * 24; // Number of minutes to wait to refesh cach
 var txt = GM_getValue("steam_info", "{}");
 var dt = GM_getValue("last_upd", 0);
 var r = JSON.parse(txt);
-var ignoredApps = r.rgIgnoredApps;
-var ownedApps = r.rgOwnedApps;
-var ownedPackages = r.rgOwnedPackages;
-var wishlist = r.rgWishlist;
-var cartApps = r.rgAppsInCart;
-var cartPackages = r.rgPackagesInCart;
+//r.rgIgnoredApps;
 var demo = [];
 var free = [];
 
-if (Date.now() - dt > userRefreshInterval * 60000 || ownedApps===undefined)
+if (Date.now() - dt > userRefreshInterval * 60000 || r.rgOwnedApps===undefined)
     update();
 
 unsafeWindow.cmp = function() {
@@ -50,67 +45,6 @@ unsafeWindow.cmp = function() {
     if (a.length > 0 || b.length > 0 ){
         comp(a, b);
     }
-}
-
-async function pack(data, c)
-{
-    var h = $(data).find('h1')[0];
-    $(h).children().first().remove();
-    var t = $.trim($(h).text());
-
-    var p = $(data).find("td.price-line[data-cc*='cn']");
-    var np = '';
-    if (p.length > 0){
-        np = $(p[0]).next('td').text();
-    }
-    var l = {'l':-1,'c':0,'n':[]};
-    l = await sublow(c, 'sub');
-    var n = '';
-    $.each(l.n, function(j, item){
-        n += '<div>' + tm(item) + '</div>';
-    });
-
-    var cl = '';
-    var s = $(data).find('.countries-list');
-    if (s.length > 0){
-        cl += $(s[0]).text();
-        if (s.length > 1)
-            cl += ' +';
-    }
-    if (cl){
-        if ((/is only purchasable in specified/.exec(data)))
-            cl = `<br><span style="color:red">${cl}</span>`;
-        if ((/can NOT be purchased in specified/.exec(data)))
-            cl = `<br><span style="color:red"><s>${cl}</s></span>`;
-    }
-    p = $('<tr></tr>');
-    if ($.inArray(c*1, ownedPackages) > -1)
-        p.addClass('package owned');
-    p.append(`<td>${c}</td><td><a target=_blank href="/sub/${c}/">${t}</a>${cl}</td><td>${np}</td><td>${l.l}</td><td>-${l.c}%</td><td>${n}</td>`);
-    $('#p').append(p);
-}
-
-async function packb(data, c)
-{
-    var h = $(data).find('h1')[0];
-    $(h).children().first().remove();
-    var t = $.trim($(h).text());
-
-    var p = $(data).find("td.price-line[data-cc*='cn']");
-    var np = '';
-    if (p.length > 0){
-        np = $(p[0]).next('td').html();
-    }
-    var l = {'l':-1,'c':0,'n':[]};
-    l = await sublow(c, 'bundle');
-    var n = '';
-    $.each(l.n, function(j, item){
-        n += '<div>' + tm(item) + '</div>';
-    });
-
-    p = $('<tr></tr>');
-    p.append(`<td>${c}</td><td><a target=_blank href="/bundle/${c}/">${t}</a></td><td>${np}</td><td>${l.l}</td><td>-${l.c}%</td><td>${n}</td>`);
-    $('#p').append(p);
 }
 
 function comp(a, b) {
@@ -136,8 +70,39 @@ function comp(a, b) {
             type: 'GET',
             async: false,
         }).done(function (data) {
-            pack(data, c);
+            //var h = $(data).find('.css-truncate')[0];
+            var h = $(data).find('h1')[0];
+            $(h).children().first().remove();
+            var t = $.trim($(h).text());
 
+            var p = $(data).find("td.price-line[data-cc*='cn']");
+            var np = '';
+            if (p.length > 0){
+                np = $(p[0]).next('td').text();
+            }
+            var l = {'l':-1,'c':0,'n':[]};
+            //l = sublow(c, 'sub');
+            var n = '';
+            $.each(l.n, function(j, item){
+                n += '<div>' + tm(item) + '</div>';
+            });
+
+            var cl = '';
+            var s = $(data).find('.hr-country-list');
+            if (s.length > 0){
+                cl = s.parent().prop("firstChild").nodeValue;
+            }
+            if (cl){
+                if ((/is only purchasable in specified/.exec(data)))
+                    cl = `<br><span style="color:red">${cl}</span>`;
+                if ((/can NOT be purchased in specified/.exec(data)))
+                    cl = `<br><span style="color:red"><s>${cl}</s></span>`;
+            }
+            p = $('<tr></tr>');
+            if ($.inArray(c*1, r.rgOwnedPackages) > -1)
+                p.addClass('package owned');
+            p.append(`<td>${c}</td><td><a target=_blank href="/sub/${c}/">${t}</a>${cl}</td><td>${np}</td><td>${l.l}</td><td>-${l.c}%</td><td>${n}</td>`);
+            $('#p').append(p);
             var apps = $(data).find('.app');
             $.each(apps, function(j,item){
                 var td = $(item).children('td');
@@ -186,7 +151,25 @@ function comp(a, b) {
             type: 'GET',
             async: false,
         }).done(function (data) {
-            packb(data, c);
+            //var h = $(data).find('.css-truncate')[0];
+            var h = $(data).find('h1')[0];
+            $(h).children().first().remove();
+            var t = $.trim($(h).text());
+
+            var l = 0;
+            var np = 0;
+            $(data).find('.price-initial').each(function(){
+                var m = /[0-9.]+/.exec($(this).text());
+                if (m)
+                    l += parseFloat(m[0]);
+                var n = $(this).parent().attr('data-sort');
+                np += Math.round(n / 100);
+            });
+            var x = Math.round((1 - (np / l)) * 100);
+            var n = $(data).find('.panel-error div').text();
+            var p = $('<tr></tr>');
+            p.append(`<td>${c}</td><td><a target=_blank href="/bundle/${c}/">${t}</a></td><td>${np}</td><td></td><td>-${x}%</td><td>${n}</td>`);
+            $('#p').append(p);
 
             var apps = $(data).find('.app');
             $.each(apps, function(j,item){
@@ -220,9 +203,9 @@ function comp(a, b) {
                 cp += '<td></td>';
         });
         var p = $(`<tr id="${i}"></tr>`);
-        if ($.inArray(i*1, ownedApps) > -1)
+        if ($.inArray(i*1, r.rgOwnedApps) > -1)
             p.addClass('app owned');
-        else if ($.inArray(i*1, wishlist) > -1)
+        else if ($.inArray(i*1, r.rgWishlist) > -1)
             p.addClass('app wished');
         else
             p.addClass(v.mark);
@@ -259,34 +242,42 @@ unsafeWindow.tm = function(dt) {
     return `${y}-${m}-${d} ${h}:${i}:${s}`;
 }
 
-async function sublow(id, tp) {
+unsafeWindow.sublow = function(id, tp) {
     var r = {'l':-1,'c':0,'n':[]};
-    const response = await fetch(`/api/GetPriceHistory/?${tp}id=${id}&cc=cn`, {
-        method: "GET",
-        headers: {
-            "Accept": "application/json, text/javascript, */*",
-            "x-requested-with": "XMLHttpRequest"
-        },
-        referrer: `/${tp}/${id}/`,
-    });
-    const data = await response.json();
-    if (data && data.success){
-        if (data.data.history.length > 0){
-            $.each(data.data.history, function(i, v){
-                if (v.y > 0) {
-                    if (r.l < 0 && v.y > 0 || r.l > v.y) {
-                        r = {
-                            l :v.y,
-                            c :v.d,
-                            n : [v.x],
-                        };
-                    } else if (r.l == v.y) {
-                        r.n.push(v.x);
+    $.ajax({
+        url: `/api/GetPriceHistory/?${tp}id=${id}&cc=cn`,
+        type: 'GET',
+        async: false,
+    }).done(function (data) {
+        var id = `#${id}`;
+        if (data.success){
+            var a = {};
+            var b = [];
+            if (data.data.history.length > 0){
+                $.each(data.data.history, function(i, v){
+                    if (a.hasOwnProperty(v[1])){
+                        a[v[1]].push(v[0]);
+                    } else {
+                        a[v[1]] = [v[0]];
                     }
+                });
+                var c = Object.getOwnPropertyNames(a);
+                var l = c[0];
+                if (l == 0)
+                    l = c[1];
+                var d = a[l];
+                d.reverse();
+                r.n = d;
+                if (data.data.formatted.hasOwnProperty(d[0]))
+                {
+                    d = data.data.formatted[d[0]];
+                    r.c = d.discount;
+                    r.l = l;
                 }
-            });
+            }
         }
-    }
+    }).fail(function (xhr) {
+    });
     return r;
 }
 
@@ -325,12 +316,6 @@ function update(){
                 GM_setValue("steam_info", response.responseText);
                 GM_setValue("last_upd", Date.now());
                 r = JSON.parse(response.responseText);
-                ignoredApps = r.rgIgnoredApps;
-                ownedApps = r.rgOwnedApps;
-                ownedPackages = r.rgOwnedPackages;
-                wishlist = r.rgWishlist;
-                cartApps = r.rgAppsInCart;
-                cartPackages = r.rgPackagesInCart;
                 //alert("complete");
             }
         },
@@ -343,7 +328,7 @@ function update(){
     });
 }
 
-document.addEventListener ("DOMContentLoaded", DOM_ContentReady);
+window.addEventListener ("DOMContentLoaded", DOM_ContentReady);
 window.addEventListener ("load", pageFullyLoaded);
 
 function DOM_ContentReady () {
@@ -434,7 +419,7 @@ function pageFullyLoaded () {
         $('#freepackages').before('<div id="b"></div>');
         $('#freepackages').before('<div id="c"></div>');
         $('#freepackages').before('<table id="d"></table>');
-        $('h1').after('<input id="a1" type="button" value="Add" />');
+        $('h1').after('<input id="a1" type="button" value="Add" />&emsp;');
         $('h1').after('<input id="f1" type="button" value="Filter" />');
     }
 
@@ -452,11 +437,11 @@ function pageFullyLoaded () {
             p.each(function(){
                 var id = $(this).attr('data-subid');
                 $(this).append(`<td><input class="si" type="checkbox" value="${id}">sub/${id}</td>`);
-                if ($.inArray(id, ownedPackages) > -1){
+                if ($.inArray(id, r.rgOwnedPackages) > -1){
                     $(this).addClass("owned");
                 }
-                if ($.inArray(id, cartPackages) > -1){
-                    $(this).addClass("carted");
+                if ($.inArray(id, r.rgPackagesInCart) > -1){
+                    $(this).addClass("incart");
                 }
             });
 
@@ -469,13 +454,13 @@ function pageFullyLoaded () {
         $('.app').each(function(){
             var id = $(this).attr('data-appid');
             $(this).append('<td>app/' + id + '</td>');
-            if ($.inArray(id, ownedApps) > -1){
+            if ($.inArray(id, r.rgOwnedApps) > -1){
                 $(this).addClass("owned");
-            } else if ($.inArray(id, wishlist) > -1){
+            } else if ($.inArray(id, r.rgWishlist) > -1){
                 $(this).addClass("wished");
             }
-            if ($.inArray(id, cartApps) > -1){
-                $(this).addClass("carted");
+            if ($.inArray(id, r.rgAppsInCart) > -1){
+                $(this).addClass("incart");
             }
         });
     }
