@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         cgame_list
 // @namespace    http://tampermonkey.net/
-// @version      2021.11.26.2
+// @version      2021.11.27.1
 // @description  replace google cdn
 // @author       jacky
 // @match        https://www.c5game.com/dota.html*
@@ -133,7 +133,7 @@ if (q.length > 0) {
                             url: `${ua}${i}${ub}`,
                             type: "GET",
                             success: function( data, status, xhr ){
-                                var m = /itemDetail = ({[^;]+});/.exec(data);
+                                var m = /itemDetail = ({[^;]+})[;<]/.exec(data);
                                 var json;
                                 if (m)
                                     json = JSON.parse(m[1]);
