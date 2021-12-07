@@ -7,7 +7,7 @@
 // @icon        http://steamcommunity.com/favicon.ico
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/steam_game_cards.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/steam_game_cards.user.js
-// @version     2018.12.17.1
+// @version     2021.12.07.1
 // @run-at      document-end
 // @require     http://libs.baidu.com/jquery/1.10.1/jquery.min.js
 // @grant       GM_addStyle
@@ -111,10 +111,7 @@ unsafeWindow.buyall = function(){
     var j = 0;
     $('.bu').each(function(){
         var a = $(this);
-        j++;
-        setTimeout(function () {
-            a.click();
-        }, j * 3000);
+        setTimeout(function(){a.click();}, j++ * 3000);
     });
 }
 
@@ -132,17 +129,18 @@ unsafeWindow.getcards = function(id, url){
         }
     }).done(function (data) {
         var r = /market\/listings\/753\/([0-9]+)\-([^\/'"]+)/ig;
+        var i = 0;
         while (m = r.exec(data)){
             var hash = `${m[1]}-${m[2]}`;
             var t = decodeURIComponent(m[2]);
-            $(id).append(`<tr><td><a target=_blank href="/${m[0]}">${t}</a></td><td id=${k}></td></tr>`);
-            getcardprice(k++, hash);
+            $(id).append(`<tr><td><a target=_blank href="/${m[0]}">${t}</a></td><td id="${k}"></td></tr>`);
+            setTimeout(getcardprice, i++ * 2000, k++, hash);
         }
     }).fail(function (xhr) {
     });
 }
 
-unsafeWindow.getcardprice = function(k, hash){
+function getcardprice(k, hash){
     var id = `#${k}`;
     var url = `/market/priceoverview/?country=CN&currency=23&appid=753&market_hash_name=${hash}`;
     var lowest = '';
@@ -188,8 +186,7 @@ unsafeWindow.createbuyorder = function(hash, p, id){
         $(w).empty();
         if (data.success === 1)
         {
-            var buy_orderid = data.buy_orderid;
-            setTimeout(getbuyorderstatus(buy_orderid, w), 3000);
+            setTimeout(getbuyorderstatus, 3000, data.buy_orderid, w);
         }
         else
         {
