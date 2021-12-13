@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         buff_parse
 // @namespace    http://tampermonkey.net/
-// @version      2021.11.30.1
+// @version      2021.12.03.1
 // @description  try to take over the world!
 // @author       jacky
 // @match        https://buff.163.com/market/dota2
+// @match        https://buff.163.com/market/csgo
 // @icon         https://www.google.com/s2/favicons?domain=buff.163.com
 // @require      http://libs.baidu.com/jquery/1.10.1/jquery.min.js
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/buff_parse.user.js
@@ -21,6 +22,9 @@ GM_addStyle("table{border:solid 1px;border-collapse:collapse !important;}");
 GM_addStyle("tr,td{border:solid 1px;border-collapse:collapse;padding-left:5px;padding-right:5px !important;}");
 $('#j_market_card').after('<table id="a"></table>');
 $('#a').after('<iframe id="iframeForm" name="iframeForm" style="display:none;"></iframe>');
+
+var g_rgWalletInfo = {"wallet_currency":23,"wallet_country":"CN","wallet_state":"","wallet_fee":"1","wallet_fee_minimum":"1","wallet_fee_percent":"0.05","wallet_publisher_fee_percent_default":"0.10","wallet_fee_base":"0"};
+var publisherFee = g_rgWalletInfo['wallet_publisher_fee_percent_default'];
 
 var g = 'none';
 var ma = /dota|csgo/.exec(document.URL);
@@ -83,7 +87,7 @@ function parse(html){
                     data['a'].forEach(function (v) {
                         var i = v['i'];
                         var j = l[`.${i}`];
-                        $('#a').append(`<tr id=${i}><td><a target=_blank href="/goods/${i}?from=market#tab=selling">${j['t']}</a><br><a target=_blank href="https://steamcommunity.com/market/listings/${app}/${v['l']}">${v['l']}</a></td><td>${j['p']}<br>${j['n']}</td></tr>`);
+                        $('#a').append(`<tr id=${i}><td><a target=_blank href="/goods/${i}?from=market#tab=selling">${j['t']}</a></td><td><a target=_blank href="https://steamcommunity.com/market/listings/${app}/${v['l']}">${v['l']}</a></td><td>${j['p']}</td><td>${j['n']}</td></tr>`);
                         if (!v['n'] || v['n'] == 0){
                             r.push(v);
                         } else {
@@ -150,7 +154,7 @@ function parse(html){
                                         }
                                     }
                                     if (y > 0){
-                                        $('#a').append(`<tr id=${i}><td><a target=_blank href="/goods/${i}?from=market#tab=selling">${j}</a><br><a target=_blank href="https://steamcommunity.com/market/listings/${app}/${k}">${k}</a></td><td>${l[`.${i}`]['p']}<br>${l[`.${i}`]['n']}</td></tr>`);
+                                        $('#a').append(`<tr id=${i}><td><a target=_blank href="/goods/${i}?from=market#tab=selling">${j}</a></td><td><a target=_blank href="https://steamcommunity.com/market/listings/${app}/${k}">${k}</a></td><td>${l[`.${i}`]['p']}</td><td>${l[`.${i}`]['n']}</td></tr>`);
                                         get_p(i, y, l[`.${i}`]['p'], z++);
                                     }
                                     //$('#f').after(`<div>${j}|${k}|${y}</div>`);
@@ -183,6 +187,18 @@ function parse(html){
     }
 }
 
+function co(q)
+{
+    var c = "#000000";
+    if (q < 0.65)
+        c = "#00FF00";
+    else if (q < 0.75)
+        c = "#00FF7F";
+    else if (q < 0.85)
+        c = "#1E90FF";
+    return c;
+}
+
 function get_p(i, n, j ,z)
 {
     setTimeout(function () {
@@ -192,35 +208,87 @@ function get_p(i, n, j ,z)
             onload: function (response) {
                 var data = JSON.parse(response.responseText);
                 if (data.success == 1){
-                    var buy = 0,bp = 0, bq = 0, co = "black";
+                    var buy = 0,bp = 0, bq = 0, c, fee;
                     // data.buy_order_graph.length
                     if (data.highest_buy_order) {
+                        fee = CalculateFeeAmount(data.highest_buy_order, publisherFee);
                         buy = (data.highest_buy_order / 100).toFixed(2);
-                        if (buy > j){
-                            bp = (buy * 0.87).toFixed(2);
-                            bq = (j / bp).toFixed(2);//0.87
-                            if (bq < 0.8)
-                                co = "green";
-                        }
+                        bp = ((data.highest_buy_order - fee.fees) / 100).toFixed(2);
+                        bq = (j / bp).toFixed(2);//0.87
+                        c = co(bq);
                     }
-                    $(`#${i}`).append(`<td>${buy}<br>${bp}</td><td><span style="color: ${co};">${bq}</span></td>`);
+                    $(`#${i}`).append(`<td>${buy}</td></td>${bp}</td><td><span style="color: ${c};">${bq}</span></td>`);
                     var sell = 0, sp = 0, sq = 0;
                     // data.sell_order_graph.length
                     if (data.lowest_sell_order){
+                        fee = CalculateFeeAmount(data.lowest_sell_order, publisherFee);
                         sell = (data.lowest_sell_order / 100).toFixed(2);
-                        if (sell > j){
-                            sp = (sell * 0.87).toFixed(2);
-                            sq = (j / sp).toFixed(2);//0.87
-                            if (sq < 0.8)
-                                co = "green";
-                        }
+                        sp = ((data.lowest_sell_order - fee.fees) / 100).toFixed(2);
+                        sq = (j / sp).toFixed(2);//0.87
+                        c = co(sq);
                     }
-                    $(`#${i}`).append(`<td>${sell}<br>${sp}</td><td><span style="color: ${co};">${sq}</span></td>`);
+                    $(`#${i}`).append(`<td>${sell}</td></td>${sp}</td><td><span style="color: ${c};">${sq}</span></td>`);
                 }
             },
             fail: function( data, status, xhr ){
                 $(`#${i}`).append(`<td>${status}</td>`);
             }
         });
-    },z * 1100);
+    },z * 600);
+}
+
+function CalculateFeeAmount( amount, publisherFee )
+{
+    if ( !g_rgWalletInfo['wallet_fee'] )
+        return 0;
+    publisherFee = ( typeof publisherFee == 'undefined' ) ? 0 : publisherFee;
+    // Since CalculateFeeAmount has a Math.floor, we could be off a cent or two. Let's check:
+    var iterations = 0; // shouldn't be needed, but included to be sure nothing unforseen causes us to get stuck
+    var nEstimatedAmountOfWalletFundsReceivedByOtherParty = parseInt( ( amount - parseInt( g_rgWalletInfo['wallet_fee_base'] ) ) / ( parseFloat( g_rgWalletInfo['wallet_fee_percent'] ) + parseFloat( publisherFee ) + 1 ) );
+    var bEverUndershot = false;
+    var fees = CalculateAmountToSendForDesiredReceivedAmount( nEstimatedAmountOfWalletFundsReceivedByOtherParty, publisherFee );
+    while ( fees.amount != amount && iterations < 10 )
+    {
+        if ( fees.amount > amount )
+        {
+            if ( bEverUndershot )
+            {
+                fees = CalculateAmountToSendForDesiredReceivedAmount( nEstimatedAmountOfWalletFundsReceivedByOtherParty - 1, publisherFee );
+                fees.steam_fee += ( amount - fees.amount );
+                fees.fees += ( amount - fees.amount );
+                fees.amount = amount;
+                break;
+            }
+            else
+            {
+                nEstimatedAmountOfWalletFundsReceivedByOtherParty--;
+            }
+        }
+        else
+        {
+            bEverUndershot = true;
+            nEstimatedAmountOfWalletFundsReceivedByOtherParty++;
+        }
+        fees = CalculateAmountToSendForDesiredReceivedAmount( nEstimatedAmountOfWalletFundsReceivedByOtherParty, publisherFee );
+        iterations++;
+    }
+    // fees.amount should equal the passed in amount
+    return fees;
+}
+
+function CalculateAmountToSendForDesiredReceivedAmount( receivedAmount, publisherFee )
+{
+    if ( !g_rgWalletInfo['wallet_fee'] )
+        return receivedAmount;
+    publisherFee = ( typeof publisherFee == 'undefined' ) ? 0 : publisherFee;
+    var nSteamFee = parseInt( Math.floor( Math.max( receivedAmount * parseFloat( g_rgWalletInfo['wallet_fee_percent'] ), g_rgWalletInfo['wallet_fee_minimum'] ) + parseInt( g_rgWalletInfo['wallet_fee_base'] ) ) );
+    var nPublisherFee = parseInt( Math.floor( publisherFee > 0 ? Math.max( receivedAmount * publisherFee, 1 ) : 0 ) );
+    var nAmountToSend = receivedAmount + nSteamFee + nPublisherFee;
+
+    return {
+        steam_fee: nSteamFee,
+        publisher_fee: nPublisherFee,
+        fees: nSteamFee + nPublisherFee,
+        amount: parseInt( nAmountToSend )
+    };
 }

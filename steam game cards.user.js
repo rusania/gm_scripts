@@ -7,7 +7,7 @@
 // @icon        http://steamcommunity.com/favicon.ico
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/steam_game_cards.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/steam_game_cards.user.js
-// @version     2021.12.07.1
+// @version     2021.12.13.1
 // @run-at      document-end
 // @require     http://libs.baidu.com/jquery/1.10.1/jquery.min.js
 // @grant       GM_addStyle
@@ -33,13 +33,7 @@ if (m){
                 if (m)
                     app = m[1];
             }
-            a = $(this).find('.badge_progress_info');
-            var text = '';
-            if (a.length > 0){
-                m = /(\d+) of (\d+) cards/.exec($(a[0]).text());
-                if (m)
-                    text = m[2] - m[1];
-            }
+            var text = $(this).find('.badge_progress_info:first').text();
             $('#b').append(`<tr><td>${i++}</td><td><a target=_blank href="${url}">${app}</a></td><td>${text}</td><td><a href="javascript:void(0);" onclick="getcards(${app}, '${url}');">check</a></td><td id="${app}"></td></tr>`);
         });
     } else {
