@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         cgame_list
 // @namespace    http://tampermonkey.net/
-// @version      2021.12.02.1
+// @version      2022.01.13.1
 // @description  replace google cdn
 // @author       jacky
 // @match        https://www.c5game.com/dota.html*
@@ -89,7 +89,7 @@ if (q.length > 0) {
                 if (!v['n'] || v['n'] == 0){
                     r.push(v);
                 } else {
-                    get_p(i, v['n'], j['p'], z++);
+                    setTimeout(get_p, z++ * 600, i, v['n'], j['p']);
                 }
             });
             var q = r.length;
@@ -116,7 +116,7 @@ if (q.length > 0) {
                                 }
                             }
                             if (y > 0)
-                                get_p(i, y, l[`.${i}`]['p'], z++);
+                                setTimeout(get_p, z++ * 600, i, y, l[`.${i}`]['p']);
                             $('#f2').append(`<input type="hidden" name="${i}" value="${y}" />`);
                             //$('#c').append(`<tr><td>${i}</td><td>${y}</td></tr>`);
                             if (q==0){
@@ -162,7 +162,7 @@ if (q.length > 0) {
                                             }
                                             if (y > 0){
                                                 $('#a').append(`<tr id=${i}><td><a target=_blank href="${ua}${i}${ub}">${l[`.${i}`]['t']}</a>&nbsp;<a target=_blank href="https://steamcommunity.com/market/listings/${app}/${k}"><i class="iconfont">&#xe6e4;</i></a></td><td>${l[`.${i}`]['p']}</td><td>${l[`.${i}`]['n']}</td></tr>`);
-                                                get_p(i, y, l[`.${i}`]['p'], z++);
+                                                setTimeout(get_p, z++ * 600, i, y, l[`.${i}`]['p']);
                                             }
                                             //$('#f').after(`<div>${j}|${k}|${y}</div>`);
                                             $('#f').append(`<input type="hidden" name="${i}" value="${j}^${k}^${y}" />`);
@@ -226,42 +226,40 @@ function co(q)
     return c;
 }
 
-function get_p(i, n, j ,z)
+function get_p(i, n, j)
 {
-    setTimeout(function () {
-        GM_xmlhttpRequest({
-            method: 'GET',
-            url: `https://steamcommunity.com/market/itemordershistogram?country=CN&language=schinese&currency=23&item_nameid=${n}&two_factor=0`,
-            onload: function (response) {
-                var data = JSON.parse(response.responseText);
-                if (data.success == 1){
-                    var buy = 0,bp = 0, bq = 0, c, fee;
-                    // data.buy_order_graph.length
-                    if (data.highest_buy_order) {
-                        fee = CalculateFeeAmount(data.highest_buy_order, publisherFee);
-                        buy = (data.highest_buy_order / 100).toFixed(2);
-                        bp = ((data.highest_buy_order - fee.fees) / 100).toFixed(2);
-                        bq = (j / bp).toFixed(2);//0.87
-                        c = co(bq);
-                    }
-                    $(`#${i}`).append(`<td>${buy}</td><td>${bp}</td><td><span style="color: ${c};">${bq}</span></td>`);
-                    var sell = 0, sp = 0, sq = 0;
-                    // data.sell_order_graph.length
-                    if (data.lowest_sell_order){
-                        fee = CalculateFeeAmount(data.lowest_sell_order, publisherFee);
-                        sell = (data.lowest_sell_order / 100).toFixed(2);
-                        sp = ((data.lowest_sell_order - fee.fees) / 100).toFixed(2);
-                        sq = (j / sp).toFixed(2);//0.87
-                        c = co(sq);
-                    }
-                    $(`#${i}`).append(`<td>${sell}</td><td>${sp}</td><td><span style="color: ${c};">${sq}</span></td>`);
+    GM_xmlhttpRequest({
+        method: 'GET',
+        url: `https://steamcommunity.com/market/itemordershistogram?country=CN&language=schinese&currency=23&item_nameid=${n}&two_factor=0`,
+        onload: function (response) {
+            var data = JSON.parse(response.responseText);
+            if (data.success == 1){
+                var buy = 0,bp = 0, bq = 0, c, fee;
+                // data.buy_order_graph.length
+                if (data.highest_buy_order) {
+                    fee = CalculateFeeAmount(data.highest_buy_order, publisherFee);
+                    buy = (data.highest_buy_order / 100).toFixed(2);
+                    bp = ((data.highest_buy_order - fee.fees) / 100).toFixed(2);
+                    bq = (j / bp).toFixed(2);//0.87
+                    c = co(bq);
                 }
-            },
-            fail: function( data, status, xhr ){
-                $(`#${i}`).append(`<td>${status}</td>`);
+                $(`#${i}`).append(`<td>${buy}</td><td>${bp}</td><td><span style="color: ${c};">${bq}</span></td>`);
+                var sell = 0, sp = 0, sq = 0;
+                // data.sell_order_graph.length
+                if (data.lowest_sell_order){
+                    fee = CalculateFeeAmount(data.lowest_sell_order, publisherFee);
+                    sell = (data.lowest_sell_order / 100).toFixed(2);
+                    sp = ((data.lowest_sell_order - fee.fees) / 100).toFixed(2);
+                    sq = (j / sp).toFixed(2);//0.87
+                    c = co(sq);
+                }
+                $(`#${i}`).append(`<td>${sell}</td><td>${sp}</td><td><span style="color: ${c};">${sq}</span></td>`);
             }
-        });
-    },z * 600);
+        },
+        fail: function( data, status, xhr ){
+            $(`#${i}`).append(`<td>${status}</td>`);
+        }
+    });
 }
 
 function steam_url(id, t)

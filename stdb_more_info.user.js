@@ -10,7 +10,7 @@
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/stdb_more_info.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/stdb_more_info.user.js
 // @require     http://libs.baidu.com/jquery/1.10.1/jquery.min.js
-// @version     2021.11.25.1
+// @version     2021.12.23.1
 // @connect     store.steampowered.com
 // @grant       unsafeWindow
 // @grant       GM_xmlhttpRequest
@@ -65,9 +65,21 @@ function comp(a, b) {
         f.push(c);
         $('#c').append(`<td>${c}</td>`);
         $('#h').append(`<td>${c}</td>`);
+        var xhr = new XMLHttpRequest();
+        xhr.setDisableHeaderCheck(true);
         $.ajax({
-            url: `/sub/${c}/`,
+            beforeSend: function(request) {
+                request.setRequestHeader('authority', 'steamdb.info');
+                request.setRequestHeader('sec-fetch-dest', 'document');
+                request.setRequestHeader('sec-fetch-mode', 'navigate');
+                request.setRequestHeader('sec-fetch-site', 'same-origin');
+            },
+            xhr: function() {
+                return xhrOverride;
+            },
+            url: `/sub/${c}/?utm_source=Steam&utm_medium=Steam&utm_campaign=SteamDB%20Extension`,
             type: 'GET',
+            dataType: 'html',
             async: false,
         }).done(function (data) {
             //var h = $(data).find('.css-truncate')[0];

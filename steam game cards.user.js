@@ -7,7 +7,7 @@
 // @icon        http://steamcommunity.com/favicon.ico
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/steam_game_cards.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/steam_game_cards.user.js
-// @version     2021.12.13.1
+// @version     2021.12.28.1
 // @run-at      document-end
 // @require     http://libs.baidu.com/jquery/1.10.1/jquery.min.js
 // @grant       GM_addStyle
@@ -53,7 +53,7 @@ if (m){
             $('.profile_xp_block').before('<table id="b"></table>');
             $('.badge_craft_button').each(function(k, v){
                 m = /gamecards\/(\d+)/.exec($(v).attr('href'));
-                $('#b').append(`<tr><td>${k}</td><td><a href="javascript:void(0);" onclick="craftcard(${m[1]});">${m[1]}</a></td><td id="${m[1]}"></td></tr>`);
+                $('#b').append(`<tr id="${m[1]}"><td>${k}</td><td><a href="javascript:void(0);" onclick="craftcard(${m[1]});">${m[1]}</a></td><td></td></tr>`);
             });
         }
     }
@@ -63,41 +63,43 @@ if (m){
     var id = match[1];
     var collect = $('.badge_cards_to_collect').html();
     i = 0;
-    $('.badge_detail_tasks').before('<table id="bl"></table><br><a href="javascript:void(0);" onclick="buyall();">购买全部</a>');
-    $('.badge_card_set_card.unowned').each(function () {
-        var un = $(this).find('.badge_card_set_text.ellipsis') [0];
-        var text = $.trim($(un).text());
-        var hash = id + '-' + text;
-        if (collect.indexOf(hash.replace(' ', '%20') + '%20%28Trading%20Card%29') > 0){
-            hash += ' (Trading Card)';
-            text += ' (Trading Card)';
-        }
-        if (collect.indexOf('%28Foil%29') > 0){
-            hash += ' (Foil)';
-            text += ' (Foil)';
-        }
-        // 1=usd,23=cny
+    $('.badge_detail_tasks_rule').after('<table id="bl"></table><div><a href="javascript:void(0);" onclick="buyall();">购买全部</a></div>');
+    $('.badge_detail_tasks_rule').after('<div><a href="javascript:void(0);" onclick="listall();">未拥有</a></div>');
+}
 
-        var url = `/market/priceoverview/?country=CN&currency=23&appid=753&market_hash_name=${hash}`;
-        var lowest = '';
-        $.getJSON(url, function (data) {
-            if (data.success === true) {
-                lowest = data.lowest_price;
-                if (lowest){
-                    var median = data.median_price;
-                    i++;
-                    match = /(\d+)\.(\d+)/.exec(lowest);
-                    var p = parseInt(match[1], 10) * 100 + parseInt(match[2], 10);
-                    $('#bl').append(`<tr><td><a target="_blank" href="/market/listings/753/${hash}">${text}</a></td><td><a class="bu" href="javascript:void(0);" onclick="createbuyorder('${hash}',${p},${i});">${lowest}</a></td><td id="c${i}"></td></tr>`);
+unsafeWindow.listall = function(){
+    var i=0;
+    $('.badge_card_to_collect_info').each(function () {
+        var text = $(this).find('.badge_card_collect_text div:first').text();
+        var a = $(this).find('.badge_card_to_collect_links a[href*="market"]:first');
+        var m = /\/(\d+\-.*)/.exec($(a).attr('href'));
+        var hash = '';
+        if (m){
+            hash = decodeURI(m[1]);
+            // 1=usd,23=cny
+            var url = `/market/priceoverview/?country=CN&currency=23&appid=753&market_hash_name=${hash}`;
+            var lowest = '';
+            $.getJSON(url, function (data) {
+                if (data.success === true) {
+                    lowest = data.lowest_price;
+                    if (lowest){
+                        var median = data.median_price;
+                        i++;
+                        match = /(\d+)\.(\d+)/.exec(lowest);
+                        var p = parseInt(match[1], 10) * 100 + parseInt(match[2], 10);
+                        $('#bl').append(`<tr><td><a target="_blank" href="/market/listings/753/${hash}">${text}</a></td><td><a class="bu" href="javascript:void(0);" onclick="createbuyorder('${hash}',${p},${i});">${lowest}</a></td><td id="c${i}"></td></tr>`);
+                    } else {
+                        $('#bl').append(`<tr><td><a target="_blank" href="/market/listings/753/${hash}">${text}</a></td><td></td><td></td></tr>`);
+                    }
                 } else {
                     $('#bl').append(`<tr><td><a target="_blank" href="/market/listings/753/${hash}">${text}</a></td><td></td><td></td></tr>`);
                 }
-
-            }
-        }).done(function () {
-        }).fail(function (jqxhr) {
-            alert(jqxhr);
-        });
+            }).done(function () {
+            }).fail(function (jqxhr) {
+                console.log(jqxhr)
+                $('#bl').append(`<tr><td><a target="_blank" href="/market/listings/753/${hash}">${text}</a></td><td></td><td></td></tr>`);
+            });
+        }
     });
 }
 
@@ -212,14 +214,13 @@ unsafeWindow.getbuyorderstatus = function(buy_orderid, w){
 }
 
 unsafeWindow.craftcard = function(id){
-    var w = '#' + id;
+    var w = `#${id}`;
     var da = {
         appid: id,
         series: 1,
         border_color: 0,
         sessionid: g_sessionID
     };
-    $(w).empty();
     $.ajax({
         url: 'https://steamcommunity.com/profiles/76561198104311295/ajaxcraftbadge/',
         type: 'POST',
@@ -228,12 +229,12 @@ unsafeWindow.craftcard = function(id){
         if (data.success === 1)
         {
             var d = data.Badge.unlocked_time;
-            $(w).append(`<div>${data.Badge.title} (${data.Badge.game})</div><div>${data.Badge.xp}</div><div><img src="${data.Badge.image}" /></div>`);
+            $(w).append(`<td><img src="${data.Badge.image}" /></td><td>${data.Badge.title} (${data.Badge.game})</td><td>${data.Badge.xp}</td>`);
             $.each(data.rgDroppedItems, function (i, item) {
                 if (item.level)
-                    $(w).append(`<div><span style="color:green;">${item.level} (${item.type})</span></div>`);
+                    $(w).append(`<td><span style="color:green;">${item.level} (${item.type})</span></td>`);
                 else
-                    $(w).append(`<div>${item.title} (${item.label})</div>`);
+                    $(w).append(`<td>${item.title} (${item.label})</td>`);
             });
         }
         else

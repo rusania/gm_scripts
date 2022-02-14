@@ -3,11 +3,12 @@
 // @namespace   http://tampermonkey.net/
 // @description hb subscription info
 // @include     http*://www.humblebundle.com/subscription/*
+// @include     http*://www.humblebundle.com/membership/*
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/hb_subs_info.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/hb_subs_info.user.js
 // @connect     steamdb.info
 // @grant       unsafeWindow
-// @version     2021.11.09.1
+// @version     2022.02.08.1
 // @run-at      document-body
 // @require     http://cdn.bootcss.com/jquery/3.1.0/jquery.min.js
 // @grant       GM_xmlhttpRequest
@@ -55,7 +56,7 @@ function DOM_ContentReady () {
                 $('#a1').append(`<p>${d}</p>`);
                 $('#a1').append(`<p>${j.payEarlyOptions.productMachineName}</p>`);
             }
-            $('#a1').append(`<p><a target=_blank href="/subscription/${j.contentChoiceOptions.productUrlPath}">${j.contentChoiceOptions.title}</a></p>`);
+            $('#a1').append(`<p><a target=_blank href="/membership/${j.contentChoiceOptions.productUrlPath}">${j.contentChoiceOptions.title}</a></p>`);
             var f = j.contentChoiceOptions.gamekey ? true : false;
             var gamekey, made=[];
             if (f){
@@ -64,13 +65,21 @@ function DOM_ContentReady () {
                     made = j.contentChoiceOptions.contentChoicesMade.initial.choices_made;
                 $('#a1').append(`<p><a target=_blank href="/?key=${gamekey}">${gamekey}</a></p>`);
             }
-            $('#a1').append(`<p>${j.contentChoiceOptions.contentChoiceData.initial.total_choices}</p>`);;
-            var g = j.contentChoiceOptions.contentChoiceData.initial.content_choices;
+            var g, order;
+            if (j.contentChoiceOptions.usesChoices) {
+                $('#a1').append(`<p>${j.contentChoiceOptions.contentChoiceData.initial.total_choices}</p>`);;
+                g = j.contentChoiceOptions.contentChoiceData.initial.content_choices;
+                order = j.contentChoiceOptions.contentChoiceData.initial.display_order;
+
+            } else {
+                g = j.contentChoiceOptions.contentChoiceData.game_data;
+                order = j.contentChoiceOptions.contentChoiceData.display_order;
+            }
             $('#a1').append('<table id="b"></table>');
             $('#a1').append(`<p>Key:</p>`);
             $('#a1').append('<table id="c"></table>');
             var n = 1;
-            $.each(j.contentChoiceOptions.contentChoiceData.initial.display_order, function (i, e) {
+            $.each(order, function (i, e) {
                 $('#b').append(`<tr id="${e}"></tr>`);
                 var claim = '';
                 if (f && $.inArray(e, made) > -1)

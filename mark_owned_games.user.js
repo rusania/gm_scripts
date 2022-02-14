@@ -24,7 +24,7 @@
 // @include     https://www.youshangames.com/wholesale-center.html*
 // @include     http://bundle.ccyycn.com/*
 // @include     https://www.steamgifts.com/discussion/Infm8/*
-// @version     2021.11.11.1
+// @version     2022.02.09.1
 // @run-at      document-end
 // @connect     store.steampowered.com
 // @connect     steamcardexchange.net
@@ -145,8 +145,9 @@ function update(){
                 cartApps = r.rgAppsInCart;
                 cartPackages = r.rgPackagesInCart;
                 //alert("complete");
+                $('#upd').attr('title', Date.now().toLocaleString());
             } else {
-                alert("error");
+                $('#upd').attr('title', 'error');
             }
         },
         onerror:  function(response) {

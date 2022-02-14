@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name        steam_package
-// @namespace    http://tampermonkey.net/
-// @include     https://help.steampowered.com/en/wizard/HelpWithGameIssue/*appid=*
-// @include     https://help.steampowered.com/en/wizard/HelpWithGame/*appid=*
+// @namespace   http://tampermonkey.net/
+// @include     https://help.steampowered.com/*/wizard/HelpWithGameIssue/*appid=*
+// @include     https://help.steampowered.com/*/wizard/HelpWithGame/*appid=*
 // @updateURL 	https://github.com/rusania/gm_scripts/raw/master/steam_package.user.js
 // @downloadURL https://github.com/rusania/gm_scripts/raw/master/steam_package.user.js
-// @version     2021.09.27.1
+// @version     2022.01.20.1
 // @run-at      doument-end
 // @require     http://libs.baidu.com/jquery/1.10.1/jquery.min.js
 // @connect     store.steampowered.com

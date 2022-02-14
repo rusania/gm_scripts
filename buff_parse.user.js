@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         buff_parse
 // @namespace    http://tampermonkey.net/
-// @version      2021.12.03.1
+// @version      2022.01.13.1
 // @description  try to take over the world!
 // @author       jacky
 // @match        https://buff.163.com/market/dota2
@@ -91,7 +91,7 @@ function parse(html){
                         if (!v['n'] || v['n'] == 0){
                             r.push(v);
                         } else {
-                            get_p(i, v['n'], j['p'], z++);
+                            setTimeout(get_p, z++ * 600, i, v['n'], j['p']);
                         }
                     });
                     var q = r.length;
@@ -118,7 +118,7 @@ function parse(html){
                                         }
                                     }
                                     if (y > 0)
-                                        get_p(i, y, l[`.${i}`]['p'], z++);
+                                        setTimeout(get_p, z++ * 600, i, y, l[`.${i}`]['p']);
                                     $('#f2').append(`<input type="hidden" name="${i}" value="${y}" />`);
                                     //$('#c').append(`<tr><td>${i}</td><td>${y}</td></tr>`);
                                     if (q==0){
@@ -155,7 +155,7 @@ function parse(html){
                                     }
                                     if (y > 0){
                                         $('#a').append(`<tr id=${i}><td><a target=_blank href="/goods/${i}?from=market#tab=selling">${j}</a></td><td><a target=_blank href="https://steamcommunity.com/market/listings/${app}/${k}">${k}</a></td><td>${l[`.${i}`]['p']}</td><td>${l[`.${i}`]['n']}</td></tr>`);
-                                        get_p(i, y, l[`.${i}`]['p'], z++);
+                                        setTimeout(get_p, z++ * 600, i, y, l[`.${i}`]['p']);
                                     }
                                     //$('#f').after(`<div>${j}|${k}|${y}</div>`);
                                     $('#f').append(`<input type="hidden" name="${i}" value="${j}^${k}^${y}" />`);
@@ -199,9 +199,8 @@ function co(q)
     return c;
 }
 
-function get_p(i, n, j ,z)
+function get_p(i, n, j)
 {
-    setTimeout(function () {
         GM_xmlhttpRequest({
             method: 'GET',
             url: `https://steamcommunity.com/market/itemordershistogram?country=CN&language=schinese&currency=23&item_nameid=${n}&two_factor=0`,
@@ -217,7 +216,7 @@ function get_p(i, n, j ,z)
                         bq = (j / bp).toFixed(2);//0.87
                         c = co(bq);
                     }
-                    $(`#${i}`).append(`<td>${buy}</td></td>${bp}</td><td><span style="color: ${c};">${bq}</span></td>`);
+                    $(`#${i}`).append(`<td>${buy}</td><td>${bp}</td><td><span style="color: ${c};">${bq}</span></td>`);
                     var sell = 0, sp = 0, sq = 0;
                     // data.sell_order_graph.length
                     if (data.lowest_sell_order){
@@ -227,14 +226,13 @@ function get_p(i, n, j ,z)
                         sq = (j / sp).toFixed(2);//0.87
                         c = co(sq);
                     }
-                    $(`#${i}`).append(`<td>${sell}</td></td>${sp}</td><td><span style="color: ${c};">${sq}</span></td>`);
+                    $(`#${i}`).append(`<td>${sell}</td><td>${sp}</td><td><span style="color: ${c};">${sq}</span></td>`);
                 }
             },
             fail: function( data, status, xhr ){
                 $(`#${i}`).append(`<td>${status}</td>`);
             }
         });
-    },z * 600);
 }
 
 function CalculateFeeAmount( amount, publisherFee )
