@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        dig_game_keys
 // @namespace    http://tampermonkey.net/
-// @version      2021.07.11.1
+// @version      2022.06.02.1
 // @description  dig game keys
 // @author       jacky
 // @include     http*://*dailyindiegame.com/superbundle_*
@@ -68,17 +68,18 @@ else {
         if (bundle==='Source')
             return;
 
-        var b = '.';
-        m = /Weekly Bundle (\d+)/.exec(bundle);
+        var b = '_';
+        r['_'] = [];
+        m = /DIG ([A-Za-z]+) Bundle (\d+)/.exec(bundle);
         if (m) {
-            b = `_${m[1]}`;
-            bundle = `<a target=_blank href="/site_weeklybundle${b}.html">${bundle}</a>`;
+            b = (`site_${m[1]}bundle_${m[2]}`).toLowerCase();
+            bundle = `<a target=_blank href="/${b}.html">${bundle}</a>`;
             if (!r[b]) {
                 r[b]=[];
             }
         }
 
-        var name = $.trim($(td[2]).text());
+        var name = $.trim($(td[2]).text()).toLowerCase();
         var key = $.trim($(td[4]).text());
         var id = '0';
         var act = '';
@@ -111,7 +112,7 @@ else {
         });
         if (t++ %2 == 1)
             $(`.${n}`).css('background-color', '#4169E1');
-        $('#single').after(`<div><a href="javascript:void(0);" onclick="getb('${n}');">${n}</a></div>`);
+        $('#single').after(`<div><a href="javascript:void(0);" onclick="getb('${n}');">${n}</a>&nbsp${w.length}</div>`);
     });
 
     $('#bundle').click(function () {
@@ -190,15 +191,15 @@ unsafeWindow.getb =function(id){
     $('#week').empty();
     var k = id;
     $.ajax({
-        url: `/site_weeklybundle${k}.html`
+        url: `/${k}.html`
     }).done(function (data) {
         var d = $(data).find("a[href*='/app/']");
         d.each(function(){
             var h = $(this).attr('href');
-            var t = $.trim($(this).parent().prop("firstChild").nodeValue);
-            $(`.${k} td:contains('${t}')`).each(function(){
+            var t = $.trim($(this).parent().prop("firstChild").nodeValue).toLowerCase();
+            $(`.${k} td:contains("${t}")`).each(function(){
                 if ($(this).text() == t)
-                    $(this).replaceWith(`<td class="td"><a href="${h}">${t}</a></td>`);
+                    $(this).replaceWith(`<td class="td"><a target=_blank href="${h}">${t}</a></td>`);
             });
         });
     });

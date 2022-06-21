@@ -24,7 +24,7 @@
 // @include     https://www.youshangames.com/wholesale-center.html*
 // @include     http://bundle.ccyycn.com/*
 // @include     https://www.steamgifts.com/discussion/Infm8/*
-// @version     2022.02.09.1
+// @version     2022.06.02.1
 // @run-at      document-end
 // @connect     store.steampowered.com
 // @connect     steamcardexchange.net
@@ -90,6 +90,7 @@ $('#card').click(function(){upcard();});
 $('#mark').click(function(){
     $('.ruc').remove();
     $('.dbc').remove();
+    $('.db').remove();
     var b = $("a:not(.db)[href*='/app/'],[href*='/sub/'],[href*='-appid-'],[href*='gamelisting_']");
     mark(b);
     b = $("button[data-img*='/apps/'],[data-img*='/subs/']");
@@ -101,6 +102,7 @@ $('#mark').click(function(){
 $('#umark').click(function(){
     $('.ruc').remove();
     $('.dbc').remove();
+    $('.db').remove();
 });
 
 if (Date.now() - dt > userRefreshInterval * 60000 || ownedApps===undefined)
@@ -208,7 +210,7 @@ function mark(a){
                     card = ` <span class="ruc" style="color: ${cardColor}; cursor: help;">${cardIcon}</span>`;
                     $(this).after(card);
                 }
-                $(this).after(` <a class="db" target=_blank href="https://barter.vg/steam/${m[1]}/${id}/" target=_blank><img src="https://bartervg.com/imgs/ico/barter/favicon-16x16.png" /></a>`);
+                $(this).after(` <a class="db" target=_blank href="https://barter.vg/steam/${m[1]}/${id}/" target=_blank>BV</a>`);
             }
             else {
                 if ($.inArray(id, ownedPackages) > -1){
@@ -223,7 +225,7 @@ function mark(a){
             html = ` <span class="ruc" style="color: ${color}; cursor: help;">${icon}</span>`;
             var ma = /steamdb.info|barter.vg/.exec(h);
             if (!ma)
-                $(this).after(` <a class="dbc" target=_blank href="https://steamdb.info/${m[1]}/${id}/" target=_blank><img src="https://steamdb.info/static/logos/16px.png" /></a>`);
+                $(this).after(` <a class="dbc" target=_blank href="https://steamdb.info/${m[1]}/${id}/" target=_blank>DB</a>`);
             $(this).after(html);
         }
     });
@@ -257,7 +259,7 @@ function mark2(a){
                     card = ` <span class="ruc" style="color: ${cardColor}; cursor: help;">${cardIcon}</span>`;
                     $(this).after(card);
                 }
-                $(this).after(` <a class="db" target=_blank href="https://barter.vg/steam/${tp}/${id}/" target=_blank><img src="https://bartervg.com/imgs/ico/barter/favicon-16x16.png" /></a>`);
+                $(this).after(` <a class="db" target=_blank href="https://barter.vg/steam/${tp}/${id}/" target=_blank>BV</a>`);
             }
             else {
                 if ($.inArray(id, ownedPackages) > -1){
@@ -273,7 +275,7 @@ function mark2(a){
             html = ` <span class="ruc" style="color: ${color}; cursor: help;">${icon}</span>`;
             var ma = /steamdb.info|barter.vg/.exec(h);
             if (!ma)
-                $(this).after(` <a class="dbc" target=_blank href="https://steamdb.info/${tp}/${id}/" target=_blank><img src="https://steamdb.info/static/logos/16px.png" /></a>`);
+                $(this).after(` <a class="dbc" target=_blank href="https://steamdb.info/${tp}/${id}/" target=_blank>DB</a>`);
             $(this).after(html);
         }
     });
@@ -310,8 +312,8 @@ function mark3(a){
             html = ` <span class="ruc" style="color: ${color}; cursor: help;">${icon}</span>`;
             var ma = /steamdb.info|barter.vg/.exec(h);
             if (!ma){
-                $(this).after(` <a class="dbc" target=_blank href="https://barter.vg/steam/app/${id}/" target=_blank><img src="https://bartervg.com/imgs/ico/barter/favicon-16x16.png" /></a>`);
-                $(this).after(` <a class="dbc" target=_blank href="https://steamdb.info/app/${id}/" target=_blank><img src="https://steamdb.info/static/logos/16px.png" /></a>`);
+                $(this).after(` <a class="dbc" target=_blank href="https://barter.vg/steam/app/${id}/" target=_blank>BV</a>`);
+                $(this).after(` <a class="dbc" target=_blank href="https://steamdb.info/app/${id}/" target=_blank>DB</a>`);
             }
             $(this).after(html);
         }
